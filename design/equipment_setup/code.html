@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Equipment Setup</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Anybody:wght@800;900&amp;family=Hanken+Grotesk:wght@400;700&amp;family=JetBrains+Mono:wght@500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                            "on-background": "#e3e4d0",
+                            "on-primary-fixed": "#181e00",
+                            "on-error": "#690005",
+                            "background": "#121409",
+                            "on-tertiary-fixed": "#001e2c",
+                            "secondary-fixed": "#e4e3da",
+                            "surface-container": "#1f2114",
+                            "outline-variant": "#454933",
+                            "on-primary": "#2c3400",
+                            "error-container": "#93000a",
+                            "primary-fixed-dim": "#b6d300",
+                            "primary-fixed": "#d0f118",
+                            "inverse-on-surface": "#303224",
+                            "primary-container": "#c8e800",
+                            "tertiary-fixed": "#c3e8ff",
+                            "surface-container-high": "#292b1e",
+                            "on-tertiary": "#003549",
+                            "secondary-container": "#494a43",
+                            "on-surface": "#e3e4d0",
+                            "on-tertiary-container": "#32657f",
+                            "tertiary": "#eff8ff",
+                            "surface-variant": "#343628",
+                            "on-primary-container": "#576600",
+                            "on-secondary-fixed": "#1b1c17",
+                            "inverse-surface": "#e3e4d0",
+                            "secondary-fixed-dim": "#c7c7be",
+                            "tertiary-container": "#afe1ff",
+                            "on-primary-fixed-variant": "#404c00",
+                            "on-secondary": "#30312b",
+                            "on-secondary-container": "#b9b9b0",
+                            "surface-dim": "#121409",
+                            "on-secondary-fixed-variant": "#464741",
+                            "surface-container-low": "#1b1d10",
+                            "on-tertiary-fixed-variant": "#124c65",
+                            "surface-tint": "#b6d300",
+                            "on-surface-variant": "#c6c9ad",
+                            "surface-container-highest": "#343628",
+                            "primary": "#efffa1",
+                            "on-error-container": "#ffdad6",
+                            "outline": "#909379",
+                            "surface": "#121409",
+                            "surface-bright": "#383a2c",
+                            "secondary": "#c7c7be",
+                            "surface-container-lowest": "#0d0f05",
+                            "tertiary-fixed-dim": "#9bcdea",
+                            "inverse-primary": "#566500",
+                            "error": "#ffb4ab"
+                    },
+                    "borderRadius": {
+                            "DEFAULT": "0.25rem",
+                            "lg": "0.5rem",
+                            "xl": "0.75rem",
+                            "full": "9999px"
+                    },
+                    "spacing": {
+                            "base": "4px",
+                            "section-gap": "48px",
+                            "gutter": "16px",
+                            "container-margin": "24px"
+                    },
+                    "fontFamily": {
+                            "label-caps": ["Hanken Grotesk", "sans-serif"],
+                            "stat-sm": ["JetBrains Mono", "monospace"],
+                            "stat-lg": ["JetBrains Mono", "monospace"],
+                            "body-lg": ["Hanken Grotesk", "sans-serif"],
+                            "display-lg": ["Anybody", "sans-serif"],
+                            "display-xl": ["Anybody", "sans-serif"],
+                            "body-md": ["Hanken Grotesk", "sans-serif"],
+                            "headline-md": ["Anybody", "sans-serif"]
+                    },
+                    "fontSize": {
+                            "label-caps": ["12px", { "lineHeight": "100%", "letterSpacing": "0.1em", "fontWeight": "700" }],
+                            "stat-sm": ["14px", { "lineHeight": "100%", "fontWeight": "500" }],
+                            "stat-lg": ["24px", { "lineHeight": "100%", "letterSpacing": "-0.05em", "fontWeight": "600" }],
+                            "body-lg": ["18px", { "lineHeight": "150%", "fontWeight": "400" }],
+                            "display-lg": ["48px", { "lineHeight": "100%", "letterSpacing": "-0.01em", "fontWeight": "800" }],
+                            "display-xl": ["80px", { "lineHeight": "100%", "letterSpacing": "-0.02em", "fontWeight": "900" }],
+                            "body-md": ["16px", { "lineHeight": "150%", "fontWeight": "400" }],
+                            "headline-md": ["32px", { "lineHeight": "110%", "fontWeight": "800" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        body { font-family: 'Hanken Grotesk', sans-serif; }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background text-on-background min-h-screen flex flex-col">
+<!-- TopAppBar (JSON) -->
+<nav class="bg-background flex justify-between items-center px-gutter py-4 w-full docked full-width top-0 border-b border-outline-variant flat no shadows">
+<div class="flex items-center gap-4">
+<span class="material-symbols-outlined text-on-background">square</span>
+<span class="font-display-lg text-display-lg uppercase text-on-background">TODAY</span>
+</div>
+<div class="bg-on-background text-background p-2 font-black rounded-full w-10 h-10 flex items-center justify-center">
+<!-- User profile avatar placeholder -->
+<span class="material-symbols-outlined">person</span>
+</div>
+</nav>
+<!-- Main Content Canvas -->
+<main class="flex-1 px-container-margin py-section-gap flex flex-col max-w-5xl mx-auto w-full">
+<header class="mb-section-gap">
+<h1 class="font-display-lg text-display-lg text-primary-container uppercase break-words leading-none">
+                WHAT DO<br/>YOU HAVE?
+            </h1>
+</header>
+<!-- Equipment Grid -->
+<div class="grid grid-cols-2 md:grid-cols-4 gap-base mb-section-gap">
+<!-- Selected Chips -->
+<button class="h-12 bg-primary-container text-on-primary-fixed border border-primary-container font-stat-sm text-stat-sm uppercase flex items-center justify-center transition-colors">
+                BARBELL
+            </button>
+<button class="h-12 bg-primary-container text-on-primary-fixed border border-primary-container font-stat-sm text-stat-sm uppercase flex items-center justify-center transition-colors">
+                DUMBBELLS
+            </button>
+<button class="h-12 bg-primary-container text-on-primary-fixed border border-primary-container font-stat-sm text-stat-sm uppercase flex items-center justify-center transition-colors">
+                CABLES
+            </button>
+<!-- Unselected Chips -->
+<button class="h-12 bg-surface text-on-background border border-outline-variant font-stat-sm text-stat-sm uppercase flex items-center justify-center hover:bg-surface-variant transition-colors">
+                KETTLEBELLS
+            </button>
+<button class="h-12 bg-surface text-on-background border border-outline-variant font-stat-sm text-stat-sm uppercase flex items-center justify-center hover:bg-surface-variant transition-colors">
+                PULL-UP BAR
+            </button>
+<button class="h-12 bg-surface text-on-background border border-outline-variant font-stat-sm text-stat-sm uppercase flex items-center justify-center hover:bg-surface-variant transition-colors">
+                SQUAT RACK
+            </button>
+<button class="h-12 bg-surface text-on-background border border-outline-variant font-stat-sm text-stat-sm uppercase flex items-center justify-center hover:bg-surface-variant transition-colors">
+                BENCH
+            </button>
+<button class="h-12 bg-surface text-on-background border border-outline-variant font-stat-sm text-stat-sm uppercase flex items-center justify-center hover:bg-surface-variant transition-colors">
+                BANDS
+            </button>
+<button class="h-12 bg-surface text-on-background border border-outline-variant font-stat-sm text-stat-sm uppercase flex items-center justify-center hover:bg-surface-variant transition-colors">
+                MED BALL
+            </button>
+<button class="h-12 bg-surface text-on-background border border-outline-variant font-stat-sm text-stat-sm uppercase flex items-center justify-center hover:bg-surface-variant transition-colors">
+                MACHINE
+            </button>
+<button class="h-12 bg-surface text-on-background border border-outline-variant font-stat-sm text-stat-sm uppercase flex items-center justify-center hover:bg-surface-variant transition-colors">
+                BODYWEIGHT
+            </button>
+<button class="h-12 bg-surface text-on-background border border-outline-variant font-stat-sm text-stat-sm uppercase flex items-center justify-center hover:bg-surface-variant transition-colors">
+                NONE
+            </button>
+</div>
+<!-- Sticky CTA Area -->
+<div class="mt-auto pb-8 pt-4">
+<button class="w-full h-14 bg-primary-container text-on-primary-fixed rounded font-label-caps text-label-caps uppercase flex items-center justify-center gap-2 hover:opacity-90 transition-opacity">
+                BUILD MY PROGRAM
+                <span class="material-symbols-outlined font-label-caps text-label-caps">arrow_forward</span>
+</button>
+</div>
+</main>
+<!-- BottomNavBar intentionally suppressed for transactional onboarding screen -->
+</body></html>

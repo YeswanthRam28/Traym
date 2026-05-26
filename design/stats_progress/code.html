@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Progress / Stats</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;700&amp;family=JetBrains+Mono:wght@500;600&amp;family=Anybody:wght@800;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-background": "#e3e4d0",
+                        "on-primary-fixed": "#181e00",
+                        "on-error": "#690005",
+                        "background": "#121409",
+                        "on-tertiary-fixed": "#001e2c",
+                        "secondary-fixed": "#e4e3da",
+                        "surface-container": "#1f2114",
+                        "outline-variant": "#454933",
+                        "on-primary": "#2c3400",
+                        "error-container": "#93000a",
+                        "primary-fixed-dim": "#b6d300",
+                        "primary-fixed": "#d0f118",
+                        "inverse-on-surface": "#303224",
+                        "primary-container": "#c8e800",
+                        "tertiary-fixed": "#c3e8ff",
+                        "surface-container-high": "#292b1e",
+                        "on-tertiary": "#003549",
+                        "secondary-container": "#494a43",
+                        "on-surface": "#e3e4d0",
+                        "on-tertiary-container": "#32657f",
+                        "tertiary": "#eff8ff",
+                        "surface-variant": "#343628",
+                        "on-primary-container": "#576600",
+                        "on-secondary-fixed": "#1b1c17",
+                        "inverse-surface": "#e3e4d0",
+                        "secondary-fixed-dim": "#c7c7be",
+                        "tertiary-container": "#afe1ff",
+                        "on-primary-fixed-variant": "#404c00",
+                        "on-secondary": "#30312b",
+                        "on-secondary-container": "#b9b9b0",
+                        "surface-dim": "#121409",
+                        "on-secondary-fixed-variant": "#464741",
+                        "surface-container-low": "#1b1d10",
+                        "on-tertiary-fixed-variant": "#124c65",
+                        "surface-tint": "#b6d300",
+                        "on-surface-variant": "#c6c9ad",
+                        "surface-container-highest": "#343628",
+                        "primary": "#efffa1",
+                        "on-error-container": "#ffdad6",
+                        "outline": "#909379",
+                        "surface": "#121409",
+                        "surface-bright": "#383a2c",
+                        "secondary": "#c7c7be",
+                        "surface-container-lowest": "#0d0f05",
+                        "tertiary-fixed-dim": "#9bcdea",
+                        "inverse-primary": "#566500",
+                        "error": "#ffb4ab"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "base": "4px",
+                        "section-gap": "48px",
+                        "gutter": "16px",
+                        "container-margin": "24px"
+                    },
+                    "fontFamily": {
+                        "label-caps": ["Hanken Grotesk"],
+                        "stat-sm": ["JetBrains Mono"],
+                        "stat-lg": ["JetBrains Mono"],
+                        "body-lg": ["Hanken Grotesk"],
+                        "display-lg": ["Anybody"],
+                        "display-xl": ["Anybody"],
+                        "body-md": ["Hanken Grotesk"],
+                        "headline-md": ["Anybody"]
+                    },
+                    "fontSize": {
+                        "label-caps": ["12px", { "lineHeight": "100%", "letterSpacing": "0.1em", "fontWeight": "700" }],
+                        "stat-sm": ["14px", { "lineHeight": "100%", "fontWeight": "500" }],
+                        "stat-lg": ["24px", { "lineHeight": "100%", "letterSpacing": "-0.05em", "fontWeight": "600" }],
+                        "body-lg": ["18px", { "lineHeight": "150%", "fontWeight": "400" }],
+                        "display-lg": ["48px", { "lineHeight": "100%", "letterSpacing": "-0.01em", "fontWeight": "800" }],
+                        "display-xl": ["80px", { "lineHeight": "100%", "letterSpacing": "-0.02em", "fontWeight": "900" }],
+                        "body-md": ["16px", { "lineHeight": "150%", "fontWeight": "400" }],
+                        "headline-md": ["32px", { "lineHeight": "110%", "fontWeight": "800" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        body { background-color: theme('colors.background'); color: theme('colors.on-background'); }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="antialiased min-h-screen flex flex-col pb-20 md:pb-0">
+<!-- TopAppBar -->
+<header class="bg-background dark:bg-background text-on-background dark:text-on-background font-display-lg text-display-lg uppercase full-width top-0 border-b border-outline-variant flex justify-between items-center px-gutter py-4 w-full sticky z-40">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">square</span>
+<span class="font-display-lg text-display-lg">TODAY</span>
+</div>
+<div>
+<div class="w-10 h-10 rounded-full bg-surface-variant flex items-center justify-center overflow-hidden">
+<img alt="User profile avatar" class="w-full h-full object-cover" data-alt="A close-up portrait of a highly focused athlete looking slightly off-camera. The lighting is harsh and technical, highlighting sweat and determination. Set against a pure black background to match the aggressive, high-contrast brutalist UI style. The mood is intense and serious." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCansZs_F6ZG3cm3zqPnO_PUAAdfOpfbmZ1zCptYuAbLSWO648jWji_9m1WidYMyY32qXtNXRYXEN2xpTG-CU7B94wQ0t6gXNJrTiDH0nT1LFysXJmXfQvE0-3rIGoYejTzALhaV0vpxGeLyMa5D476PxJmZrxaMBQ2SRVL4tVT29ap5mR3loHXbJ5hY4oQgbbte-WaWblBkBHu_71W-ZXU0dmmfBtKJIvFXeQfUzQhX1HC9mpSD8xRWviCj2-XaWHUFHs0skqRKgQ"/>
+</div>
+</div>
+</header>
+<main class="flex-grow flex flex-col px-container-margin py-8 md:max-w-7xl md:mx-auto md:w-full gap-section-gap">
+<!-- Header Section -->
+<section class="flex flex-col gap-4">
+<h1 class="font-display-lg text-display-lg text-primary uppercase">YOUR NUMBERS</h1>
+<!-- Tabs -->
+<div class="flex gap-4 border-b border-outline-variant pb-2">
+<button class="font-label-caps text-label-caps text-primary border-b-2 border-primary pb-1">WEEK</button>
+<button class="font-label-caps text-label-caps text-on-surface-variant pb-1">MONTH</button>
+<button class="font-label-caps text-label-caps text-on-surface-variant pb-1">ALL TIME</button>
+</div>
+</section>
+<!-- Chart Section -->
+<section class="flex flex-col gap-4 relative">
+<div class="absolute top-0 right-0 w-2 h-2 border-t-[0.5px] border-r-[0.5px] border-primary"></div>
+<div class="absolute bottom-0 left-0 w-2 h-2 border-b-[0.5px] border-l-[0.5px] border-primary"></div>
+<h2 class="font-label-caps text-label-caps text-on-surface-variant">WORKOUT VOLUME</h2>
+<div class="h-[200px] w-full relative flex items-end pt-8">
+<!-- SVG Chart Mockup -->
+<svg class="w-full h-full overflow-visible" preserveaspectratio="none" viewbox="0 0 100 100">
+<path d="M0 80 Q 20 70, 40 90 T 80 40 T 100 20" fill="none" stroke="theme('colors.primary')" stroke-width="2" vector-effect="non-scaling-stroke"></path>
+<!-- Plot points -->
+<circle cx="0" cy="80" fill="theme('colors.primary')" r="1.5"></circle>
+<circle cx="40" cy="90" fill="theme('colors.primary')" r="1.5"></circle>
+<circle cx="80" cy="40" fill="theme('colors.primary')" r="1.5"></circle>
+<circle cx="100" cy="20" fill="theme('colors.primary')" r="1.5"></circle>
+</svg>
+</div>
+</section>
+<!-- Stat Cards (Bento Grid Style) -->
+<section class="grid grid-cols-2 md:grid-cols-4 gap-4">
+<div class="bg-[#1C1C18] border-[0.5px] border-outline-variant p-4 flex flex-col justify-between gap-4">
+<span class="font-label-caps text-label-caps text-on-surface-variant">VOLUME</span>
+<span class="font-stat-lg text-stat-lg text-on-background">12,450<span class="font-stat-sm text-stat-sm text-on-surface-variant ml-1">LBS</span></span>
+</div>
+<div class="bg-[#1C1C18] border-[0.5px] border-outline-variant p-4 flex flex-col justify-between gap-4">
+<span class="font-label-caps text-label-caps text-on-surface-variant">SESSIONS</span>
+<span class="font-stat-lg text-stat-lg text-on-background">4</span>
+</div>
+<div class="bg-[#1C1C18] border-[0.5px] border-outline-variant p-4 flex flex-col justify-between gap-4">
+<span class="font-label-caps text-label-caps text-on-surface-variant">BEST BENCH</span>
+<span class="font-stat-lg text-stat-lg text-on-background">225<span class="font-stat-sm text-stat-sm text-on-surface-variant ml-1">LBS</span></span>
+</div>
+<div class="bg-[#1C1C18] border-[0.5px] border-outline-variant p-4 flex flex-col justify-between gap-4">
+<span class="font-label-caps text-label-caps text-on-surface-variant">STREAK</span>
+<span class="font-stat-lg text-stat-lg text-on-background">12<span class="font-stat-sm text-stat-sm text-on-surface-variant ml-1">DAYS</span></span>
+</div>
+</section>
+<!-- Plateau Alert -->
+<section class="w-full bg-[#1C1C18] border-l-[2px] border-l-primary p-4 flex items-center justify-between">
+<div class="flex items-center gap-4">
+<span class="material-symbols-outlined text-primary" style="font-variation-settings: 'FILL' 1;">warning</span>
+<span class="font-label-caps text-label-caps text-on-background">BENCH STALLED FOR 3 WEEKS</span>
+</div>
+<button class="font-stat-sm text-stat-sm text-on-surface-variant hover:text-primary transition-colors">DETAILS -&gt;</button>
+</section>
+</main>
+<!-- BottomNavBar -->
+<nav class="bg-surface-container-lowest dark:bg-surface-container-lowest text-primary dark:text-primary font-label-caps text-label-caps fixed bottom-0 w-full z-50 border-t border-outline-variant flex justify-around items-center h-16 md:hidden">
+<button class="flex flex-col items-center justify-center text-on-surface-variant pb-1 hover:text-primary transition-all scale-95 duration-100">
+<span class="material-symbols-outlined">home</span>
+</button>
+<button class="flex flex-col items-center justify-center text-on-surface-variant pb-1 hover:text-primary transition-all scale-95 duration-100">
+<span class="material-symbols-outlined">edit_note</span>
+</button>
+<button class="flex flex-col items-center justify-center text-primary border-b-4 border-primary pb-1 hover:text-primary transition-all scale-95 duration-100">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">insights</span>
+</button>
+<button class="flex flex-col items-center justify-center text-on-surface-variant pb-1 hover:text-primary transition-all scale-95 duration-100">
+<span class="material-symbols-outlined">psychology</span>
+</button>
+<button class="flex flex-col items-center justify-center text-on-surface-variant pb-1 hover:text-primary transition-all scale-95 duration-100">
+<span class="material-symbols-outlined">person</span>
+</button>
+</nav>
+</body></html>

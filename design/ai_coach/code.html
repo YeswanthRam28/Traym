@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>AI Chat Coach</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Anybody:wght@800;900&amp;family=Hanken+Grotesk:wght@400;700&amp;family=JetBrains+Mono:wght@500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-background": "#e3e4d0",
+                        "on-primary-fixed": "#181e00",
+                        "on-error": "#690005",
+                        "background": "#121409",
+                        "on-tertiary-fixed": "#001e2c",
+                        "secondary-fixed": "#e4e3da",
+                        "surface-container": "#1f2114",
+                        "outline-variant": "#454933",
+                        "on-primary": "#2c3400",
+                        "error-container": "#93000a",
+                        "primary-fixed-dim": "#b6d300",
+                        "primary-fixed": "#d0f118",
+                        "inverse-on-surface": "#303224",
+                        "primary-container": "#c8e800",
+                        "tertiary-fixed": "#c3e8ff",
+                        "surface-container-high": "#292b1e",
+                        "on-tertiary": "#003549",
+                        "secondary-container": "#494a43",
+                        "on-surface": "#e3e4d0",
+                        "on-tertiary-container": "#32657f",
+                        "tertiary": "#eff8ff",
+                        "surface-variant": "#343628",
+                        "on-primary-container": "#576600",
+                        "on-secondary-fixed": "#1b1c17",
+                        "inverse-surface": "#e3e4d0",
+                        "secondary-fixed-dim": "#c7c7be",
+                        "tertiary-container": "#afe1ff",
+                        "on-primary-fixed-variant": "#404c00",
+                        "on-secondary": "#30312b",
+                        "on-secondary-container": "#b9b9b0",
+                        "surface-dim": "#121409",
+                        "on-secondary-fixed-variant": "#464741",
+                        "surface-container-low": "#1b1d10",
+                        "on-tertiary-fixed-variant": "#124c65",
+                        "surface-tint": "#b6d300",
+                        "on-surface-variant": "#c6c9ad",
+                        "surface-container-highest": "#343628",
+                        "primary": "#efffa1",
+                        "on-error-container": "#ffdad6",
+                        "outline": "#909379",
+                        "surface": "#121409",
+                        "surface-bright": "#383a2c",
+                        "secondary": "#c7c7be",
+                        "surface-container-lowest": "#0d0f05",
+                        "tertiary-fixed-dim": "#9bcdea",
+                        "inverse-primary": "#566500",
+                        "error": "#ffb4ab"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "base": "4px",
+                        "section-gap": "48px",
+                        "gutter": "16px",
+                        "container-margin": "24px"
+                    },
+                    "fontFamily": {
+                        "label-caps": ["Hanken Grotesk"],
+                        "stat-sm": ["JetBrains Mono"],
+                        "stat-lg": ["JetBrains Mono"],
+                        "body-lg": ["Hanken Grotesk"],
+                        "display-lg": ["Anybody"],
+                        "display-xl": ["Anybody"],
+                        "body-md": ["Hanken Grotesk"],
+                        "headline-md": ["Anybody"]
+                    },
+                    "fontSize": {
+                        "label-caps": ["12px", { "lineHeight": "100%", "letterSpacing": "0.1em", "fontWeight": "700" }],
+                        "stat-sm": ["14px", { "lineHeight": "100%", "fontWeight": "500" }],
+                        "stat-lg": ["24px", { "lineHeight": "100%", "letterSpacing": "-0.05em", "fontWeight": "600" }],
+                        "body-lg": ["18px", { "lineHeight": "150%", "fontWeight": "400" }],
+                        "display-lg": ["48px", { "lineHeight": "100%", "letterSpacing": "-0.01em", "fontWeight": "800" }],
+                        "display-xl": ["80px", { "lineHeight": "100%", "letterSpacing": "-0.02em", "fontWeight": "900" }],
+                        "body-md": ["16px", { "lineHeight": "150%", "fontWeight": "400" }],
+                        "headline-md": ["32px", { "lineHeight": "110%", "fontWeight": "800" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .crosshair-corner {
+            position: relative;
+        }
+        .crosshair-corner::before,
+        .crosshair-corner::after {
+            content: '';
+            position: absolute;
+            background-color: #c8e800; /* primary-container */
+        }
+        /* Top Left */
+        .crosshair-tl::before { top: 0; left: 0; width: 8px; height: 1px; }
+        .crosshair-tl::after { top: 0; left: 0; width: 1px; height: 8px; }
+        /* Top Right */
+        .crosshair-tr::before { top: 0; right: 0; width: 8px; height: 1px; }
+        .crosshair-tr::after { top: 0; right: 0; width: 1px; height: 8px; }
+        /* Bottom Left */
+        .crosshair-bl::before { bottom: 0; left: 0; width: 8px; height: 1px; }
+        .crosshair-bl::after { bottom: 0; left: 0; width: 1px; height: 8px; }
+        /* Bottom Right */
+        .crosshair-br::before { bottom: 0; right: 0; width: 8px; height: 1px; }
+        .crosshair-br::after { bottom: 0; right: 0; width: 1px; height: 8px; }
+
+        /* Hide scrollbar for clean aesthetic */
+        ::-webkit-scrollbar {
+            display: none;
+        }
+        * {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background text-on-background min-h-screen flex flex-col font-body-md h-screen overflow-hidden selection:bg-primary-container selection:text-black">
+<!-- Top Navigation (Contextual, acting as TopAppBar equivalent for this flow) -->
+<header class="flex justify-between items-center px-gutter py-4 w-full bg-background border-b border-outline-variant shrink-0 relative z-10">
+<button class="text-on-background hover:text-primary transition-colors flex items-center justify-center p-2 group">
+<span class="material-symbols-outlined text-[24px] font-[1.5px] group-hover:-translate-x-1 transition-transform">arrow_back</span>
+</button>
+<div class="flex items-center gap-3">
+<h1 class="font-stat-sm text-stat-sm text-on-surface-variant uppercase tracking-widest">AI COACH</h1>
+<div class="w-2 h-2 rounded-full bg-primary-container animate-pulse shadow-[0_0_8px_rgba(200,232,0,0.5)]"></div>
+</div>
+<div class="w-10"></div> <!-- Spacer for center alignment -->
+</header>
+<!-- Context Chips -->
+<div class="flex gap-2 overflow-x-auto px-container-margin py-4 shrink-0 bg-background border-b border-surface-container border-opacity-50">
+<button class="shrink-0 bg-surface-container border border-outline-variant px-4 py-2 text-on-surface font-stat-sm text-stat-sm hover:border-primary-container transition-colors">
+            TODAY'S SESSION
+        </button>
+<button class="shrink-0 bg-surface-container border border-outline-variant px-4 py-2 text-on-surface font-stat-sm text-stat-sm hover:border-primary-container transition-colors">
+            RECOVERY
+        </button>
+<button class="shrink-0 bg-surface-container border border-outline-variant px-4 py-2 text-on-surface font-stat-sm text-stat-sm hover:border-primary-container transition-colors">
+            NUTRITION
+        </button>
+</div>
+<!-- Main Chat Area -->
+<main class="flex-1 overflow-y-auto px-container-margin py-6 flex flex-col gap-6 relative">
+<!-- Decorative grid overlay for the brutalist feel (subtle) -->
+<div class="absolute inset-0 pointer-events-none opacity-[0.03] bg-[linear-gradient(to_right,#e3e4d0_1px,transparent_1px),linear-gradient(to_bottom,#e3e4d0_1px,transparent_1px)] bg-[size:48px_48px]"></div>
+<div class="flex-1 flex flex-col justify-end gap-8 relative z-10">
+<!-- AI Message -->
+<div class="flex gap-4 max-w-[85%]">
+<div class="w-10 h-10 bg-primary-container flex items-center justify-center shrink-0 crosshair-corner crosshair-tl crosshair-br">
+<span class="material-symbols-outlined text-black text-[20px] font-bold" style="font-variation-settings: 'FILL' 1;">psychology</span>
+</div>
+<div class="bg-surface-container p-4 border border-outline-variant font-body-lg text-body-lg text-on-background relative">
+<div class="absolute top-0 left-0 w-1 h-full bg-outline-variant"></div>
+<p>Based on your last 3 runs, your cadence is dropping significantly after mile 4. This usually indicates fatigue in the hip flexors or a breakdown in form.</p>
+</div>
+</div>
+<!-- User Message -->
+<div class="flex gap-4 max-w-[85%] self-end flex-row-reverse">
+<div class="bg-primary-container p-4 font-body-lg text-body-lg text-black font-medium relative crosshair-corner crosshair-tr crosshair-bl">
+<p>I felt it today. What should I change for tomorrow's interval session?</p>
+</div>
+</div>
+<!-- AI Message with Suggestion Card -->
+<div class="flex gap-4 max-w-[90%]">
+<div class="w-10 h-10 bg-primary-container flex items-center justify-center shrink-0 crosshair-corner crosshair-tl crosshair-br">
+<span class="material-symbols-outlined text-black text-[20px] font-bold" style="font-variation-settings: 'FILL' 1;">psychology</span>
+</div>
+<div class="flex flex-col gap-4">
+<div class="bg-surface-container p-4 border border-outline-variant font-body-lg text-body-lg text-on-background relative">
+<div class="absolute top-0 left-0 w-1 h-full bg-outline-variant"></div>
+<p>I recommend adjusting your interval targets and adding specific dynamic drills beforehand.</p>
+</div>
+<!-- Suggestion Card (High Contrast) -->
+<div class="bg-background border border-outline-variant p-5 relative overflow-hidden group">
+<!-- Left border accent -->
+<div class="absolute top-0 left-0 w-[2px] h-full bg-primary-container"></div>
+<!-- Subtle background texture -->
+<div class="absolute right-0 top-0 opacity-10 transform translate-x-1/4 -translate-y-1/4">
+<span class="material-symbols-outlined text-[120px]">tune</span>
+</div>
+<div class="relative z-10">
+<h3 class="font-label-caps text-label-caps text-on-surface-variant mb-3 flex items-center gap-2">
+<span class="material-symbols-outlined text-[14px]">auto_awesome</span>
+                                SUGGESTED CHANGE
+                            </h3>
+<div class="grid grid-cols-2 gap-4 mb-5 border-t border-outline-variant pt-4">
+<div>
+<span class="block font-stat-sm text-stat-sm text-on-surface-variant mb-1">ORIGINAL TARGET</span>
+<span class="font-stat-lg text-stat-lg text-on-background line-through opacity-50">6x800m</span>
+</div>
+<div>
+<span class="block font-stat-sm text-stat-sm text-primary-container mb-1">NEW TARGET</span>
+<span class="font-stat-lg text-stat-lg text-on-background">4x800m + Drills</span>
+</div>
+</div>
+<div class="flex gap-3 mt-4">
+<button class="flex-1 bg-primary-container text-black font-label-caps text-label-caps py-3 px-4 hover:bg-primary transition-colors flex justify-center items-center gap-2">
+                                    APPLY
+                                    <span class="material-symbols-outlined text-[16px]">check</span>
+</button>
+<button class="flex-1 bg-transparent border border-on-background text-on-background font-label-caps text-label-caps py-3 px-4 hover:bg-surface-variant transition-colors">
+                                    EXPLAIN MORE
+                                </button>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Typing indicator (simulated) -->
+<div class="flex gap-4 max-w-[85%] opacity-50">
+<div class="w-10 h-10 border border-outline-variant flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-on-surface-variant text-[20px]">more_horiz</span>
+</div>
+</div>
+</div>
+</main>
+<!-- Input Area -->
+<div class="px-container-margin py-4 bg-background border-t border-outline-variant shrink-0 z-20">
+<div class="flex items-center gap-2 relative">
+<button class="w-12 h-12 flex items-center justify-center shrink-0 text-on-surface-variant hover:text-primary-container transition-colors bg-surface-container border border-outline-variant">
+<span class="material-symbols-outlined">mic</span>
+</button>
+<div class="flex-1 relative">
+<input class="w-full bg-surface-container border-0 border-b-2 border-on-background text-on-background font-stat-sm text-stat-sm py-3 px-4 focus:ring-0 focus:border-primary-container focus:outline-none placeholder-on-surface-variant" placeholder="Ask coach anything..." type="text"/>
+</div>
+<button class="w-12 h-12 flex items-center justify-center shrink-0 text-black bg-primary-container hover:bg-primary transition-colors">
+<span class="material-symbols-outlined">send</span>
+</button>
+</div>
+</div>
+</body></html>

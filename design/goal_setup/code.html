@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Goal Setup</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;700&amp;family=JetBrains+Mono:wght@500;600&amp;family=Anybody:wght@800;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "on-background": "#e3e4d0",
+                      "on-primary-fixed": "#181e00",
+                      "on-error": "#690005",
+                      "background": "#121409",
+                      "on-tertiary-fixed": "#001e2c",
+                      "secondary-fixed": "#e4e3da",
+                      "surface-container": "#1f2114",
+                      "outline-variant": "#454933",
+                      "on-primary": "#2c3400",
+                      "error-container": "#93000a",
+                      "primary-fixed-dim": "#b6d300",
+                      "primary-fixed": "#d0f118",
+                      "inverse-on-surface": "#303224",
+                      "primary-container": "#c8e800",
+                      "tertiary-fixed": "#c3e8ff",
+                      "surface-container-high": "#292b1e",
+                      "on-tertiary": "#003549",
+                      "secondary-container": "#494a43",
+                      "on-surface": "#e3e4d0",
+                      "on-tertiary-container": "#32657f",
+                      "tertiary": "#eff8ff",
+                      "surface-variant": "#343628",
+                      "on-primary-container": "#576600",
+                      "on-secondary-fixed": "#1b1c17",
+                      "inverse-surface": "#e3e4d0",
+                      "secondary-fixed-dim": "#c7c7be",
+                      "tertiary-container": "#afe1ff",
+                      "on-primary-fixed-variant": "#404c00",
+                      "on-secondary": "#30312b",
+                      "on-secondary-container": "#b9b9b0",
+                      "surface-dim": "#121409",
+                      "on-secondary-fixed-variant": "#464741",
+                      "surface-container-low": "#1b1d10",
+                      "on-tertiary-fixed-variant": "#124c65",
+                      "surface-tint": "#b6d300",
+                      "on-surface-variant": "#c6c9ad",
+                      "surface-container-highest": "#343628",
+                      "primary": "#efffa1",
+                      "on-error-container": "#ffdad6",
+                      "outline": "#909379",
+                      "surface": "#121409",
+                      "surface-bright": "#383a2c",
+                      "secondary": "#c7c7be",
+                      "surface-container-lowest": "#0d0f05",
+                      "tertiary-fixed-dim": "#9bcdea",
+                      "inverse-primary": "#566500",
+                      "error": "#ffb4ab"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "base": "4px",
+                      "section-gap": "48px",
+                      "gutter": "16px",
+                      "container-margin": "24px"
+              },
+              "fontFamily": {
+                      "label-caps": [
+                              "Hanken Grotesk"
+                      ],
+                      "stat-sm": [
+                              "JetBrains Mono"
+                      ],
+                      "stat-lg": [
+                              "JetBrains Mono"
+                      ],
+                      "body-lg": [
+                              "Hanken Grotesk"
+                      ],
+                      "display-lg": [
+                              "Anybody"
+                      ],
+                      "display-xl": [
+                              "Anybody"
+                      ],
+                      "body-md": [
+                              "Hanken Grotesk"
+                      ],
+                      "headline-md": [
+                              "Anybody"
+                      ]
+              },
+              "fontSize": {
+                      "label-caps": [
+                              "12px",
+                              {
+                                      "lineHeight": "100%",
+                                      "letterSpacing": "0.1em",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "stat-sm": [
+                              "14px",
+                              {
+                                      "lineHeight": "100%",
+                                      "fontWeight": "500"
+                              }
+                      ],
+                      "stat-lg": [
+                              "24px",
+                              {
+                                      "lineHeight": "100%",
+                                      "letterSpacing": "-0.05em",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "body-lg": [
+                              "18px",
+                              {
+                                      "lineHeight": "150%",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "display-lg": [
+                              "48px",
+                              {
+                                      "lineHeight": "100%",
+                                      "letterSpacing": "-0.01em",
+                                      "fontWeight": "800"
+                              }
+                      ],
+                      "display-xl": [
+                              "80px",
+                              {
+                                      "lineHeight": "100%",
+                                      "letterSpacing": "-0.02em",
+                                      "fontWeight": "900"
+                              }
+                      ],
+                      "body-md": [
+                              "16px",
+                              {
+                                      "lineHeight": "150%",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "headline-md": [
+                              "32px",
+                              {
+                                      "lineHeight": "110%",
+                                      "fontWeight": "800"
+                              }
+                      ]
+              }
+      },
+          },
+        }
+      </script>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-[#0A0A08] text-on-background min-h-screen flex flex-col font-body-md antialiased md:px-container-margin md:py-container-margin selection:bg-primary-container selection:text-black">
+<!-- Top AppBar Structure (Transactional, no global nav shell) -->
+<header class="flex justify-between items-center px-gutter py-4 w-full md:px-0">
+<!-- Step Indicator -->
+<div class="flex gap-base h-6">
+<div class="w-[2px] bg-primary-container h-full"></div>
+<div class="w-[2px] bg-surface-variant h-full"></div>
+<div class="w-[2px] bg-surface-variant h-full"></div>
+</div>
+<!-- Close/Back Action implied for transactional -->
+<button aria-label="Go back" class="text-on-background flex items-center justify-center p-2 rounded-sm border border-transparent hover:border-outline-variant transition-colors">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0, 'wght' 300;">close</span>
+</button>
+</header>
+<!-- Main Content Canvas -->
+<main class="flex-grow flex flex-col px-gutter md:px-0 mt-section-gap w-full max-w-2xl mx-auto">
+<!-- Header Section -->
+<div class="mb-section-gap">
+<h1 class="font-display-lg text-display-lg text-primary-container uppercase mb-4 tracking-tighter leading-none">
+                WHAT'S YOUR MISSION?
+            </h1>
+<p class="font-body-lg text-body-lg text-on-surface-variant max-w-md">
+                We'll build everything around it.
+            </p>
+</div>
+<!-- Goal Selection Cards -->
+<div class="flex flex-col gap-4 flex-grow">
+<!-- Selected Card -->
+<button class="w-full h-[72px] bg-primary-container text-[#121409] border-[0.5px] border-primary-container flex items-center justify-between px-5 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-background focus:ring-primary-container group">
+<span class="font-headline-md text-headline-md uppercase tracking-tight">STRENGTH</span>
+<span class="material-symbols-outlined text-[#121409] group-hover:translate-x-1 transition-transform" style="font-variation-settings: 'wght' 600;">arrow_forward</span>
+</button>
+<!-- Unselected Card 1 -->
+<button class="w-full h-[72px] bg-[#1C1C18] text-on-background border-[0.5px] border-outline-variant flex items-center justify-between px-5 hover:border-primary-container transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-background focus:ring-primary-container group">
+<span class="font-headline-md text-headline-md uppercase tracking-tight text-on-surface-variant group-hover:text-on-background transition-colors">MUSCLE</span>
+</button>
+<!-- Unselected Card 2 -->
+<button class="w-full h-[72px] bg-[#1C1C18] text-on-background border-[0.5px] border-outline-variant flex items-center justify-between px-5 hover:border-primary-container transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-background focus:ring-primary-container group">
+<span class="font-headline-md text-headline-md uppercase tracking-tight text-on-surface-variant group-hover:text-on-background transition-colors">CONDITIONING</span>
+</button>
+</div>
+</main>
+<!-- Bottom Action Area -->
+<div class="px-gutter pb-8 md:px-0 md:pb-0 mt-section-gap w-full max-w-2xl mx-auto flex justify-end">
+<button class="font-stat-lg text-stat-lg text-primary-container bg-transparent flex items-center gap-2 uppercase tracking-widest hover:opacity-80 transition-opacity focus:outline-none">
+            NEXT 
+            <span class="material-symbols-outlined text-primary-container" style="font-variation-settings: 'wght' 600;">arrow_forward</span>
+</button>
+</div>
+</body></html>

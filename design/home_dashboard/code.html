@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Home Dashboard</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;700&amp;family=JetBrains+Mono:wght@500;600&amp;family=Anybody:wght@800;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-background": "#e3e4d0",
+                        "on-primary-fixed": "#181e00",
+                        "on-error": "#690005",
+                        "background": "#121409",
+                        "on-tertiary-fixed": "#001e2c",
+                        "secondary-fixed": "#e4e3da",
+                        "surface-container": "#1f2114",
+                        "outline-variant": "#454933",
+                        "on-primary": "#2c3400",
+                        "error-container": "#93000a",
+                        "primary-fixed-dim": "#b6d300",
+                        "primary-fixed": "#d0f118",
+                        "inverse-on-surface": "#303224",
+                        "primary-container": "#c8e800",
+                        "tertiary-fixed": "#c3e8ff",
+                        "surface-container-high": "#292b1e",
+                        "on-tertiary": "#003549",
+                        "secondary-container": "#494a43",
+                        "on-surface": "#e3e4d0",
+                        "on-tertiary-container": "#32657f",
+                        "tertiary": "#eff8ff",
+                        "surface-variant": "#343628",
+                        "on-primary-container": "#576600",
+                        "on-secondary-fixed": "#1b1c17",
+                        "inverse-surface": "#e3e4d0",
+                        "secondary-fixed-dim": "#c7c7be",
+                        "tertiary-container": "#afe1ff",
+                        "on-primary-fixed-variant": "#404c00",
+                        "on-secondary": "#30312b",
+                        "on-secondary-container": "#b9b9b0",
+                        "surface-dim": "#121409",
+                        "on-secondary-fixed-variant": "#464741",
+                        "surface-container-low": "#1b1d10",
+                        "on-tertiary-fixed-variant": "#124c65",
+                        "surface-tint": "#b6d300",
+                        "on-surface-variant": "#c6c9ad",
+                        "surface-container-highest": "#343628",
+                        "primary": "#efffa1",
+                        "on-error-container": "#ffdad6",
+                        "outline": "#909379",
+                        "surface": "#121409",
+                        "surface-bright": "#383a2c",
+                        "secondary": "#c7c7be",
+                        "surface-container-lowest": "#0d0f05",
+                        "tertiary-fixed-dim": "#9bcdea",
+                        "inverse-primary": "#566500",
+                        "error": "#ffb4ab"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "base": "4px",
+                        "section-gap": "48px",
+                        "gutter": "16px",
+                        "container-margin": "24px"
+                    },
+                    "fontFamily": {
+                        "label-caps": ["Hanken Grotesk", "sans-serif"],
+                        "stat-sm": ["JetBrains Mono", "monospace"],
+                        "stat-lg": ["JetBrains Mono", "monospace"],
+                        "body-lg": ["Hanken Grotesk", "sans-serif"],
+                        "display-lg": ["Anybody", "sans-serif"],
+                        "display-xl": ["Anybody", "sans-serif"],
+                        "body-md": ["Hanken Grotesk", "sans-serif"],
+                        "headline-md": ["Anybody", "sans-serif"]
+                    },
+                    "fontSize": {
+                        "label-caps": ["12px", { "lineHeight": "100%", "letterSpacing": "0.1em", "fontWeight": "700" }],
+                        "stat-sm": ["14px", { "lineHeight": "100%", "fontWeight": "500" }],
+                        "stat-lg": ["24px", { "lineHeight": "100%", "letterSpacing": "-0.05em", "fontWeight": "600" }],
+                        "body-lg": ["18px", { "lineHeight": "150%", "fontWeight": "400" }],
+                        "display-lg": ["48px", { "lineHeight": "100%", "letterSpacing": "-0.01em", "fontWeight": "800" }],
+                        "display-xl": ["80px", { "lineHeight": "100%", "letterSpacing": "-0.02em", "fontWeight": "900" }],
+                        "body-md": ["16px", { "lineHeight": "150%", "fontWeight": "400" }],
+                        "headline-md": ["32px", { "lineHeight": "110%", "fontWeight": "800" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        body { background-color: theme('colors.background'); color: theme('colors.on-background'); }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="antialiased min-h-screen flex flex-col pb-24">
+<!-- TopAppBar -->
+<header class="bg-background dark:bg-background text-on-background dark:text-on-background font-display-lg text-display-lg uppercase full-width top-0 border-b border-outline-variant flat no shadows flex justify-between items-center px-gutter py-4 w-full">
+<div class="flex items-center gap-4">
+<span class="bg-on-background text-background p-2 font-black text-2xl leading-none">A</span>
+<span class="font-stat-sm text-stat-sm text-on-surface-variant">TODAY</span>
+</div>
+<div class="flex items-center justify-center w-10 h-10 rounded-full border-[0.5px] border-outline-variant bg-surface-container text-on-background font-stat-sm text-stat-sm">
+            JD
+        </div>
+</header>
+<main class="flex-1 flex flex-col px-container-margin md:px-gutter max-w-4xl mx-auto w-full pt-8 space-y-section-gap">
+<!-- Date Header -->
+<section class="flex flex-col gap-base">
+<h2 class="font-stat-sm text-stat-sm text-on-surface-variant uppercase">MON 12 MAY</h2>
+<p class="font-label-caps text-label-caps text-primary tracking-widest uppercase">WEEK 3 · DAY 4 OF 5</p>
+</section>
+<!-- Hero Card (Today's Load) -->
+<section class="bg-surface-container border-[0.5px] border-outline-variant p-6 flex flex-col gap-4 relative overflow-hidden group">
+<div class="absolute top-0 left-0 w-full h-[0.5px] bg-outline-variant"></div>
+<div class="absolute bottom-0 left-0 w-full h-[0.5px] bg-outline-variant"></div>
+<div class="absolute top-0 left-0 w-[0.5px] h-full bg-outline-variant"></div>
+<div class="absolute top-0 right-0 w-[0.5px] h-full bg-outline-variant"></div>
+<!-- Crosshairs -->
+<div class="absolute top-2 left-2 w-2 h-[0.5px] bg-primary"></div>
+<div class="absolute top-2 left-2 w-[0.5px] h-2 bg-primary"></div>
+<div class="absolute bottom-2 right-2 w-2 h-[0.5px] bg-primary"></div>
+<div class="absolute bottom-2 right-2 w-[0.5px] h-2 bg-primary"></div>
+<h3 class="font-stat-sm text-stat-sm text-on-surface-variant uppercase">TODAY'S LOAD</h3>
+<div class="font-display-xl text-display-xl text-primary leading-[0.8] tracking-tighter">
+                4,820<span class="font-stat-sm text-stat-sm align-top ml-2">KG</span>
+</div>
+</section>
+<!-- Workout Card -->
+<section class="bg-primary-container p-6 flex flex-col gap-6 relative">
+<div class="flex flex-col gap-2">
+<span class="font-label-caps text-label-caps text-on-primary-container uppercase">UP NEXT</span>
+<h3 class="font-headline-md text-headline-md text-on-primary-container uppercase">PUSH A — CHEST &amp; SHOULDERS</h3>
+<p class="font-stat-sm text-stat-sm text-on-primary-container/80 mt-2">6 exercises · ~52 min · 18 sets</p>
+</div>
+<button class="bg-surface-container text-on-background font-label-caps text-label-caps uppercase py-4 px-6 flex items-center justify-between hover:bg-surface-variant transition-colors border-[0.5px] border-outline-variant w-full mt-4">
+<span>START WORKOUT</span>
+<span class="font-stat-sm text-stat-sm">-&gt;</span>
+</button>
+</section>
+<!-- Recent PRs -->
+<section class="flex flex-col gap-6">
+<h3 class="font-label-caps text-label-caps text-on-surface-variant uppercase border-b border-outline-variant pb-2">RECENT PRs</h3>
+<div class="flex gap-4 overflow-x-auto no-scrollbar pb-4 -mx-container-margin px-container-margin md:mx-0 md:px-0">
+<!-- PR Card 1 -->
+<div class="flex-none w-[140px] h-[90px] bg-surface-container border-[0.5px] border-outline-variant p-3 flex flex-col justify-between relative">
+<div class="font-stat-sm text-stat-sm text-on-background leading-tight uppercase">BENCH PRESS</div>
+<div class="flex items-end justify-between">
+<div class="font-display-lg text-[32px] leading-none text-primary tracking-tighter">115<span class="text-[10px] ml-1">KG</span></div>
+<div class="font-stat-sm text-[10px] text-on-surface-variant">MAY 10</div>
+</div>
+</div>
+<!-- PR Card 2 -->
+<div class="flex-none w-[140px] h-[90px] bg-surface-container border-[0.5px] border-outline-variant p-3 flex flex-col justify-between relative">
+<div class="font-stat-sm text-stat-sm text-on-background leading-tight uppercase">OHP</div>
+<div class="flex items-end justify-between">
+<div class="font-display-lg text-[32px] leading-none text-primary tracking-tighter">70<span class="text-[10px] ml-1">KG</span></div>
+<div class="font-stat-sm text-[10px] text-on-surface-variant">MAY 08</div>
+</div>
+</div>
+<!-- PR Card 3 -->
+<div class="flex-none w-[140px] h-[90px] bg-surface-container border-[0.5px] border-outline-variant p-3 flex flex-col justify-between relative">
+<div class="font-stat-sm text-stat-sm text-on-background leading-tight uppercase">SQUAT</div>
+<div class="flex items-end justify-between">
+<div class="font-display-lg text-[32px] leading-none text-primary tracking-tighter">160<span class="text-[10px] ml-1">KG</span></div>
+<div class="font-stat-sm text-[10px] text-on-surface-variant">MAY 05</div>
+</div>
+</div>
+<!-- PR Card 4 -->
+<div class="flex-none w-[140px] h-[90px] bg-surface-container border-[0.5px] border-outline-variant p-3 flex flex-col justify-between relative">
+<div class="font-stat-sm text-stat-sm text-on-background leading-tight uppercase">DEADLIFT</div>
+<div class="flex items-end justify-between">
+<div class="font-display-lg text-[32px] leading-none text-primary tracking-tighter">185<span class="text-[10px] ml-1">KG</span></div>
+<div class="font-stat-sm text-[10px] text-on-surface-variant">MAY 01</div>
+</div>
+</div>
+</div>
+</section>
+</main>
+<!-- BottomNavBar -->
+<nav class="bg-surface-container-lowest dark:bg-surface-container-lowest text-primary dark:text-primary font-label-caps text-label-caps fixed bottom-0 w-full z-50 border-t border-outline-variant flat no shadows flex justify-around items-center h-16 md:hidden">
+<a class="flex flex-col items-center justify-center text-primary border-b-4 border-primary pb-1 scale-95 duration-100 hover:text-primary transition-all" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">home</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant pb-1 hover:text-primary transition-all" href="#">
+<span class="material-symbols-outlined">edit_note</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant pb-1 hover:text-primary transition-all" href="#">
+<span class="material-symbols-outlined">psychology</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant pb-1 hover:text-primary transition-all" href="#">
+<span class="material-symbols-outlined">insights</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant pb-1 hover:text-primary transition-all" href="#">
+<span class="material-symbols-outlined">person</span>
+</a>
+</nav>
+</body></html>

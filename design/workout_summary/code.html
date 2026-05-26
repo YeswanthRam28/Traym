@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Workout Summary</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Anybody:wght@800;900&amp;family=Hanken+Grotesk:wght@400;700&amp;family=JetBrains+Mono:wght@500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "on-background": "#e3e4d0",
+                    "on-primary-fixed": "#181e00",
+                    "on-error": "#690005",
+                    "background": "#121409",
+                    "on-tertiary-fixed": "#001e2c",
+                    "secondary-fixed": "#e4e3da",
+                    "surface-container": "#1f2114",
+                    "outline-variant": "#454933",
+                    "on-primary": "#2c3400",
+                    "error-container": "#93000a",
+                    "primary-fixed-dim": "#b6d300",
+                    "primary-fixed": "#d0f118",
+                    "inverse-on-surface": "#303224",
+                    "primary-container": "#c8e800",
+                    "tertiary-fixed": "#c3e8ff",
+                    "surface-container-high": "#292b1e",
+                    "on-tertiary": "#003549",
+                    "secondary-container": "#494a43",
+                    "on-surface": "#e3e4d0",
+                    "on-tertiary-container": "#32657f",
+                    "tertiary": "#eff8ff",
+                    "surface-variant": "#343628",
+                    "on-primary-container": "#576600",
+                    "on-secondary-fixed": "#1b1c17",
+                    "inverse-surface": "#e3e4d0",
+                    "secondary-fixed-dim": "#c7c7be",
+                    "tertiary-container": "#afe1ff",
+                    "on-primary-fixed-variant": "#404c00",
+                    "on-secondary": "#30312b",
+                    "on-secondary-container": "#b9b9b0",
+                    "surface-dim": "#121409",
+                    "on-secondary-fixed-variant": "#464741",
+                    "surface-container-low": "#1b1d10",
+                    "on-tertiary-fixed-variant": "#124c65",
+                    "surface-tint": "#b6d300",
+                    "on-surface-variant": "#c6c9ad",
+                    "surface-container-highest": "#343628",
+                    "primary": "#efffa1",
+                    "on-error-container": "#ffdad6",
+                    "outline": "#909379",
+                    "surface": "#121409",
+                    "surface-bright": "#383a2c",
+                    "secondary": "#c7c7be",
+                    "surface-container-lowest": "#0d0f05",
+                    "tertiary-fixed-dim": "#9bcdea",
+                    "inverse-primary": "#566500",
+                    "error": "#ffb4ab"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "base": "4px",
+                    "section-gap": "48px",
+                    "gutter": "16px",
+                    "container-margin": "24px"
+            },
+            "fontFamily": {
+                    "label-caps": [
+                            "hankenGrotesk"
+                    ],
+                    "stat-sm": [
+                            "jetbrainsMono"
+                    ],
+                    "stat-lg": [
+                            "jetbrainsMono"
+                    ],
+                    "body-lg": [
+                            "hankenGrotesk"
+                    ],
+                    "display-lg": [
+                            "anybody"
+                    ],
+                    "display-xl": [
+                            "anybody"
+                    ],
+                    "body-md": [
+                            "hankenGrotesk"
+                    ],
+                    "headline-md": [
+                            "anybody"
+                    ]
+            },
+            "fontSize": {
+                    "label-caps": [
+                            "12px",
+                            {
+                                    "lineHeight": "100%",
+                                    "letterSpacing": "0.1em",
+                                    "fontWeight": "700"
+                            }
+                    ],
+                    "stat-sm": [
+                            "14px",
+                            {
+                                    "lineHeight": "100%",
+                                    "fontWeight": "500"
+                            }
+                    ],
+                    "stat-lg": [
+                            "24px",
+                            {
+                                    "lineHeight": "100%",
+                                    "letterSpacing": "-0.05em",
+                                    "fontWeight": "600"
+                            }
+                    ],
+                    "body-lg": [
+                            "18px",
+                            {
+                                    "lineHeight": "150%",
+                                    "fontWeight": "400"
+                            }
+                    ],
+                    "display-lg": [
+                            "48px",
+                            {
+                                    "lineHeight": "100%",
+                                    "letterSpacing": "-0.01em",
+                                    "fontWeight": "800"
+                            }
+                    ],
+                    "display-xl": [
+                            "80px",
+                            {
+                                    "lineHeight": "100%",
+                                    "letterSpacing": "-0.02em",
+                                    "fontWeight": "900"
+                            }
+                    ],
+                    "body-md": [
+                            "16px",
+                            {
+                                    "lineHeight": "150%",
+                                    "fontWeight": "400"
+                            }
+                    ],
+                    "headline-md": [
+                            "32px",
+                            {
+                                    "lineHeight": "110%",
+                                    "fontWeight": "800"
+                            }
+                    ]
+            }
+    },
+        },
+      }
+    </script>
+<style>
+        /* Base typography enforcement to prevent fallback issues */
+        body { font-family: 'Hanken Grotesk', sans-serif; }
+        .font-stat-sm, .font-stat-lg { font-family: 'JetBrains Mono', monospace; }
+        .font-display-lg, .font-display-xl, .font-headline-md { font-family: 'Anybody', sans-serif; }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-primary-container text-surface-container-lowest min-h-screen flex flex-col font-body-md uppercase antialiased selection:bg-surface-container-lowest selection:text-primary-container">
+<!-- Suppressed Navigation Shells: Transactional/Success Screen Priority -->
+<main class="flex-1 flex flex-col p-container-margin md:p-section-gap max-w-5xl mx-auto w-full">
+<!-- Header Section -->
+<header class="mb-section-gap border-b-2 border-surface-container-lowest pb-base">
+<h1 class="font-display-lg text-display-lg tracking-tighter leading-none break-words">SESSION COMPLETE</h1>
+</header>
+<!-- Stats Bento Grid -->
+<section class="grid grid-cols-2 gap-[2px] bg-surface-container-lowest border-2 border-surface-container-lowest mb-gutter">
+<!-- Duration -->
+<div class="bg-primary-container p-gutter flex flex-col justify-between aspect-square md:aspect-auto md:h-40 hover:bg-primary-fixed transition-colors">
+<span class="font-stat-sm text-stat-sm text-secondary-container">DURATION</span>
+<span class="font-headline-md text-headline-md mt-auto">01:12:45</span>
+</div>
+<!-- Sets -->
+<div class="bg-primary-container p-gutter flex flex-col justify-between aspect-square md:aspect-auto md:h-40 hover:bg-primary-fixed transition-colors">
+<span class="font-stat-sm text-stat-sm text-secondary-container">TOTAL SETS</span>
+<span class="font-headline-md text-headline-md mt-auto">24</span>
+</div>
+<!-- Volume -->
+<div class="bg-primary-container p-gutter flex flex-col justify-between aspect-square md:aspect-auto md:h-40 hover:bg-primary-fixed transition-colors">
+<span class="font-stat-sm text-stat-sm text-secondary-container">VOLUME (KG)</span>
+<span class="font-headline-md text-headline-md mt-auto">12,450</span>
+</div>
+<!-- PRs -->
+<div class="bg-primary-container p-gutter flex flex-col justify-between aspect-square md:aspect-auto md:h-40 hover:bg-primary-fixed transition-colors">
+<span class="font-stat-sm text-stat-sm text-secondary-container">PRs BROKEN</span>
+<span class="font-headline-md text-headline-md mt-auto">1</span>
+</div>
+</section>
+<!-- High Priority Callout Module -->
+<section class="bg-surface-container-lowest text-primary-container p-gutter md:py-8 mb-gutter relative overflow-hidden flex flex-col justify-center items-center text-center border-2 border-surface-container-lowest">
+<!-- Structural Decorative Elements (Crosshairs) -->
+<div class="absolute top-0 left-0 w-4 h-4 border-t-2 border-l-2 border-primary-container"></div>
+<div class="absolute top-0 right-0 w-4 h-4 border-t-2 border-r-2 border-primary-container"></div>
+<div class="absolute bottom-0 left-0 w-4 h-4 border-b-2 border-l-2 border-primary-container"></div>
+<div class="absolute bottom-0 right-0 w-4 h-4 border-b-2 border-r-2 border-primary-container"></div>
+<div class="flex items-center gap-2 mb-2">
+<span class="material-symbols-outlined text-primary-container" style="font-variation-settings: 'FILL' 1;">bolt</span>
+<span class="font-stat-sm text-stat-sm text-on-surface-variant">NEW PR</span>
+</div>
+<h2 class="font-headline-md text-headline-md tracking-tighter mb-1">INCLINE BENCH</h2>
+<div class="font-stat-lg text-stat-lg">90KG × 6</div>
+</section>
+<!-- System Insight Card -->
+<section class="bg-surface text-on-surface p-gutter mb-section-gap border border-outline-variant relative">
+<div class="absolute top-0 right-0 w-2 h-2 bg-primary-container m-2"></div>
+<div class="flex items-center gap-2 mb-4 border-b border-outline-variant pb-2">
+<span class="material-symbols-outlined text-primary-container" style="font-variation-settings: 'FILL' 1;">insights</span>
+<span class="font-label-caps text-label-caps text-primary-container">SYSTEM INSIGHT</span>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant normal-case">
+                High volume detected on anterior chain. Recovery demand is elevated. Recommend prioritizing sleep and protein intake over the next 48 hours. Target posterior chain in next session.
+            </p>
+</section>
+<!-- Call to Actions -->
+<div class="mt-auto flex flex-col md:flex-row gap-4 pt-gutter border-t border-surface-container-lowest">
+<!-- Primary Action (Inverted for Acid Theme) -->
+<button class="flex-1 bg-surface-container-lowest text-primary-container font-label-caps text-label-caps py-5 px-6 flex items-center justify-center hover:opacity-90 transition-opacity rounded-sm">
+                BACK TO HOME
+            </button>
+<!-- Ghost Action -->
+<button class="flex-1 bg-transparent border-2 border-surface-container-lowest text-surface-container-lowest font-stat-sm text-stat-sm py-5 px-6 flex items-center justify-center gap-2 hover:bg-surface-container-lowest hover:text-primary-container transition-colors rounded-sm">
+                SHARE SESSION -&gt;
+            </button>
+</div>
+</main>
+</body></html>
