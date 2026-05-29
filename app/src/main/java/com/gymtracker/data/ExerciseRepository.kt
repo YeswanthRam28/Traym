@@ -20,8 +20,8 @@ data class Exercise(
 object ExerciseRepository {
     private var allExercises: List<Exercise> = emptyList()
     
-    // Using the user's provided RapidAPI Key
-    const val RAPID_API_KEY = "39d4c7d724msh48bea839fcbd664p17d019jsn67f5e1cf7dee"
+    // Using the user's provided RapidAPI Key securely
+    val RAPID_API_KEY = com.gymtracker.BuildConfig.RAPID_API_KEY
     const val RAPID_API_HOST = "exercisedb.p.rapidapi.com"
 
     init {
