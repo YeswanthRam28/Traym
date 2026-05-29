@@ -1,3 +1,6 @@
+import java.util.Properties
+import java.io.FileInputStream
+
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
@@ -19,6 +22,14 @@ android {
         vectorDrawables {
             useSupportLibrary = true
         }
+
+        val envProps = Properties()
+        val envFile = project.rootProject.file(".env")
+        if (envFile.exists()) {
+            envProps.load(FileInputStream(envFile))
+        }
+        buildConfigField("String", "OPENROUTER_API_KEY", "\"${envProps.getProperty("OPENROUTER_API_KEY", "")}\"")
+        buildConfigField("String", "RAPID_API_KEY", "\"${envProps.getProperty("RAPID_API_KEY", "")}\"")
     }
 
     buildTypes {
@@ -63,6 +74,7 @@ dependencies {
     implementation("androidx.compose.ui:ui-tooling-preview")
     implementation("androidx.compose.material3:material3")
     implementation("androidx.navigation:navigation-compose:2.8.4")
+    implementation("org.burnoutcrew.composereorderable:reorderable:0.9.6")
     implementation("androidx.compose.ui:ui-text-google-fonts:1.5.4")
     implementation("com.patrykandpatrick.vico:compose:1.13.1")
     implementation("com.patrykandpatrick.vico:compose-m3:1.13.1")

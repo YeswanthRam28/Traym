@@ -10,11 +10,14 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 import java.util.UUID
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 
 class LocalTraymApiService : TraymApiService {
 
     private val dateFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", Locale.US)
     private var exercisesDbCache: JSONArray? = null
+    private val fileMutex = Mutex()
 
     private fun getCleanMuscleGroup(bodyPart: String, target: String): String {
         val bp = bodyPart.lowercase()
@@ -400,8 +403,9 @@ class LocalTraymApiService : TraymApiService {
     }
 
     override suspend fun completeWorkout(workoutId: String, body: CompleteWorkoutRequest): Response<WorkoutSummaryResponse> {
-        val currentWorkout = readJson("current_workout.json")
-        val currentSets = readJsonArray("current_workout_sets.json")
+        return fileMutex.withLock {
+            val currentWorkout = readJson("current_workout.json")
+            val currentSets = readJsonArray("current_workout_sets.json")
         
         val completedAt = dateFormat.format(Date())
         val startedAtStr = currentWorkout.optString("started_at")
@@ -525,15 +529,17 @@ class LocalTraymApiService : TraymApiService {
         getFile("current_workout.json").delete()
         getFile("current_workout_sets.json").delete()
 
-        // Sync to Notion database if enabled
-        NotionSyncManager.pushWorkoutToNotion(summary)
+            // Sync to Notion database if enabled
+            NotionSyncManager.pushWorkoutToNotion(summary)
 
-        return Response.success(summary)
+            Response.success(summary)
+        }
     }
 
     override suspend fun logInlineWorkout(body: InlineLogRequest): Response<WorkoutSummaryResponse> {
-        val workouts = readJsonArray("workouts.json")
-        val prs = readJson("prs.json")
+        return fileMutex.withLock {
+            val workouts = readJsonArray("workouts.json")
+            val prs = readJson("prs.json")
         val todayStr = dateFormat.format(Date()).substring(0, 10)
         
         var exVolume = 0.0
@@ -638,9 +644,10 @@ class LocalTraymApiService : TraymApiService {
             total_reps = exReps
         )
         
-        NotionSyncManager.pushWorkoutToNotion(summary)
-        
-        return Response.success(summary)
+            NotionSyncManager.pushWorkoutToNotion(summary)
+            
+            Response.success(summary)
+        }
     }
 
     override suspend fun getWorkoutHistory(): Response<List<WorkoutSummaryResponse>> {
@@ -746,91 +753,92 @@ class LocalTraymApiService : TraymApiService {
     private fun saveDefaultPlan(philosophy: String): ActivePlanResponse {
         val defaultPlanJson = """
         {
-          "split": "PPL-Cardio",
+          "split": "Custom Split",
           "week_number": 1,
           "days": [
             {
               "day": "MON",
               "title": "PULL A (BACK & REAR DELTS)",
               "exercises": [
-                {"name": "Pull-up", "sets": 3, "reps": 8},
-                {"name": "Cable Seated Row", "sets": 3, "reps": 10},
-                {"name": "Cable Lat Pulldown", "sets": 3, "reps": 10},
-                {"name": "Dumbbell Incline Row", "sets": 3, "reps": 10},
-                {"name": "Cable Face Pull", "sets": 3, "reps": 12},
-                {"name": "Machine Reverse Fly", "sets": 3, "reps": 12},
-                {"name": "Dumbbell Shrug", "sets": 3, "reps": 12},
-                {"name": "Side Plank", "sets": 3, "reps": 1}
+                {"name": "Overhand / Neutral Pull-up", "sets": 3, "reps": 12},
+                {"name": "Seated Cable Row", "sets": 3, "reps": 15},
+                {"name": "Neutral / Overhand Lat Pulldown", "sets": 3, "reps": 15},
+                {"name": "Incline DB Row (Neutral / Semi-pronated)", "sets": 3, "reps": 12},
+                {"name": "Face Pull", "sets": 3, "reps": 15},
+                {"name": "Machine Reverse Delt Fly", "sets": 3, "reps": 15},
+                {"name": "Dumbbell Shrug", "sets": 3, "reps": 15}
               ]
             },
             {
               "day": "TUE",
               "title": "PUSH A (CHEST & SHOULDERS)",
               "exercises": [
-                {"name": "Push-up", "sets": 3, "reps": 12},
-                {"name": "Barbell Bench Press", "sets": 3, "reps": 10},
-                {"name": "Dumbbell Incline Bench Press", "sets": 3, "reps": 10},
-                {"name": "Dumbbell Fly", "sets": 3, "reps": 12},
-                {"name": "Dumbbell Shoulder Press", "sets": 3, "reps": 10},
-                {"name": "Dumbbell Lateral Raise", "sets": 3, "reps": 12},
                 {"name": "Push-up", "sets": 3, "reps": 15},
-                {"name": "Hanging Leg Raise", "sets": 3, "reps": 15}
+                {"name": "Flat Barbell / DB Bench Press", "sets": 3, "reps": 15},
+                {"name": "Incline DB / Barbell Press", "sets": 3, "reps": 12},
+                {"name": "Pec Deck / Incline DB Fly / Flat DB Fly", "sets": 3, "reps": 15},
+                {"name": "DB Shoulder Press", "sets": 3, "reps": 15},
+                {"name": "Seated DB Lateral Raise / Single-arm Cable Lateral Raise", "sets": 3, "reps": 15},
+                {"name": "Push-up Plus", "sets": 3, "reps": 20}
               ]
             },
             {
               "day": "WED",
               "title": "LEGS",
               "exercises": [
-                {"name": "Barbell Squat", "sets": 3, "reps": 10},
-                {"name": "Sled 45° Leg Press", "sets": 3, "reps": 12},
-                {"name": "Lever Lying Leg Curl", "sets": 3, "reps": 12},
-                {"name": "Barbell Romanian Deadlift", "sets": 3, "reps": 10},
-                {"name": "Lever Leg Extension", "sets": 3, "reps": 12},
-                {"name": "Hyperextension", "sets": 3, "reps": 12},
-                {"name": "Barbell Standing Calf Raise", "sets": 3, "reps": 15},
-                {"name": "Lever Seated Hip Abduction", "sets": 3, "reps": 15},
-                {"name": "Tibialis Raise", "sets": 3, "reps": 15}
+                {"name": "Smith Machine / Barbell / DB Goblet Squat", "sets": 3, "reps": 12},
+                {"name": "Leg Press", "sets": 3, "reps": 15},
+                {"name": "Lying Leg Curl", "sets": 3, "reps": 15},
+                {"name": "45° Hyperextension / Back Extension", "sets": 3, "reps": 15},
+                {"name": "Leg Extension", "sets": 3, "reps": 15},
+                {"name": "Bulgarian Split Squat / Walking Lunges", "sets": 3, "reps": 12},
+                {"name": "Standing / Seated Machine Calf Raise", "sets": 3, "reps": 20},
+                {"name": "Hip Abduction Machine / Cable Hip Abduction", "sets": 3, "reps": 20},
+                {"name": "Adductor Machine", "sets": 3, "reps": 20},
+                {"name": "Tibialis Raise", "sets": 3, "reps": 20}
               ]
             },
             {
               "day": "THU",
               "title": "PULL B (BACK & BICEPS)",
               "exercises": [
-                {"name": "Chin-up", "sets": 3, "reps": 8},
-                {"name": "Dumbbell One Arm Row", "sets": 3, "reps": 10},
-                {"name": "Dumbbell Pullover", "sets": 3, "reps": 12},
-                {"name": "Dumbbell Shrug", "sets": 3, "reps": 12},
-                {"name": "Barbell Reverse Curl", "sets": 3, "reps": 12},
-                {"name": "Dumbbell Rear Lateral Raise", "sets": 3, "reps": 12},
-                {"name": "Hollow Body Hold", "sets": 3, "reps": 30}
+                {"name": "Neutral / Underhand Chin-up", "sets": 3, "reps": 12},
+                {"name": "Single-arm DB Row", "sets": 3, "reps": 15},
+                {"name": "Straight-arm Rope Pulldown", "sets": 3, "reps": 15},
+                {"name": "Hammer Curl", "sets": 3, "reps": 15},
+                {"name": "Reverse Curl", "sets": 3, "reps": 15},
+                {"name": "Incline DB Rear Delt Fly", "sets": 3, "reps": 15},
+                {"name": "Incline DB Curl (Supinated)", "sets": 3, "reps": 15}
               ]
             },
             {
               "day": "FRI",
-              "title": "PUSH B (CHEST & SHOULDERS VARIATION)",
+              "title": "PUSH B (CHEST & SHOULDERS)",
               "exercises": [
-                {"name": "Dumbbell Floor Press", "sets": 3, "reps": 12},
-                {"name": "Barbell Close-grip Bench Press", "sets": 3, "reps": 10},
-                {"name": "Cable Fly", "sets": 3, "reps": 12},
-                {"name": "Barbell Standing Overhead Press", "sets": 3, "reps": 10},
-                {"name": "Lever Shoulder Press", "sets": 3, "reps": 12},
-                {"name": "Barbell Upright Row", "sets": 3, "reps": 12},
-                {"name": "Cable Woodchop", "sets": 3, "reps": 12},
-                {"name": "Neck Flexion", "sets": 3, "reps": 15},
-                {"name": "Neck Extension", "sets": 3, "reps": 15}
+                {"name": "Chest-Focused Dips", "sets": 3, "reps": 15},
+                {"name": "Close-Grip / Neutral-Grip Bench Press", "sets": 3, "reps": 15},
+                {"name": "DB Fly (Flat or Incline Bench)", "sets": 3, "reps": 15},
+                {"name": "Standing Overhead DB / Barbell Press", "sets": 3, "reps": 12},
+                {"name": "Machine Shoulder Press", "sets": 3, "reps": 15},
+                {"name": "Upright Row (Cable / Barbell)", "sets": 3, "reps": 15},
+                {"name": "Overhead Tricep Extension (Cable / EZ-bar)", "sets": 3, "reps": 15},
+                {"name": "Serratus Punch (Cable, Single Side)", "sets": 3, "reps": 15},
+                {"name": "Neck Flexion", "sets": 3, "reps": 20},
+                {"name": "Neck Extension", "sets": 3, "reps": 20}
               ]
             },
             {
               "day": "SAT",
-              "title": "CARDIO + STAMINA",
+              "title": "CARDIO + CORE",
               "exercises": [
-                {"name": "Walk (Warm-up)", "sets": 1, "reps": 5},
-                {"name": "Run (Main)", "sets": 1, "reps": 10},
+                {"name": "Run", "sets": 1, "reps": 10},
                 {"name": "Walk/Rest", "sets": 1, "reps": 3},
-                {"name": "Run (Main)", "sets": 1, "reps": 15},
+                {"name": "Run", "sets": 1, "reps": 15},
                 {"name": "Incline Walk", "sets": 1, "reps": 10},
-                {"name": "Walk (Cool-down)", "sets": 1, "reps": 5},
-                {"name": "Stretch (Cool-down)", "sets": 1, "reps": 5}
+                {"name": "Side Plank", "sets": 3, "reps": 1},
+                {"name": "Leg Raise", "sets": 3, "reps": 20},
+                {"name": "Hollow Body Hold", "sets": 3, "reps": 40},
+                {"name": "Cable Woodchop / Pallof Press", "sets": 3, "reps": 15}
               ]
             },
             {

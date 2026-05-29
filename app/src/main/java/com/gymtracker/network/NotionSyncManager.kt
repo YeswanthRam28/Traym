@@ -11,11 +11,14 @@ import okhttp3.RequestBody.Companion.toRequestBody
 import org.json.JSONArray
 import org.json.JSONObject
 import java.io.File
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 
 object NotionSyncManager {
 
     private val client = OkHttpClient()
     private val mediaType = "application/json; charset=utf-8".toMediaType()
+    private val syncMutex = Mutex()
 
     private fun getFile(fileName: String): File {
         return File(SessionManager.appContext.filesDir, fileName)
@@ -49,164 +52,166 @@ object NotionSyncManager {
         }
 
         CoroutineScope(Dispatchers.IO).launch {
-            try {
-                // 1. Fetch pages from Notion database
-                val request = Request.Builder()
-                    .url("https://api.notion.com/v1/databases/$dbId/query")
-                    .post("{}".toRequestBody(mediaType))
-                    .addHeader("Authorization", "Bearer $token")
-                    .addHeader("Notion-Version", "2022-06-28")
-                    .build()
+            syncMutex.withLock {
+                try {
+                    // 1. Fetch pages from Notion database
+                    val request = Request.Builder()
+                        .url("https://api.notion.com/v1/databases/$dbId/query")
+                        .post("{}".toRequestBody(mediaType))
+                        .addHeader("Authorization", "Bearer $token")
+                        .addHeader("Notion-Version", "2022-06-28")
+                        .build()
 
-                val response = client.newCall(request).execute()
-                val responseBody = response.body?.string() ?: "{}"
+                    val response = client.newCall(request).execute()
+                    val responseBody = response.body?.string() ?: "{}"
 
-                if (!response.isSuccessful) {
-                    val errMsg = try {
-                        JSONObject(responseBody).optString("message", "Unknown error")
-                    } catch (e: Exception) {
-                        "HTTP ${response.code}"
+                    if (!response.isSuccessful) {
+                        val errMsg = try {
+                            JSONObject(responseBody).optString("message", "Unknown error")
+                        } catch (e: Exception) {
+                            "HTTP ${response.code}"
+                        }
+                        onError("Notion query failed: $errMsg")
+                        return@launch
                     }
-                    onError("Notion query failed: $errMsg")
-                    return@launch
-                }
 
-                val jsonResponse = JSONObject(responseBody)
-                val results = jsonResponse.optJSONArray("results") ?: JSONArray()
+                    val jsonResponse = JSONObject(responseBody)
+                    val results = jsonResponse.optJSONArray("results") ?: JSONArray()
 
-                val localWorkouts = readJsonArray("workouts.json")
-                val syncedNotionPageIds = mutableSetOf<String>()
-                val localWorkoutNotionIds = mutableSetOf<String>()
+                    val localWorkouts = readJsonArray("workouts.json")
+                    val syncedNotionPageIds = mutableSetOf<String>()
+                    val localWorkoutNotionIds = mutableSetOf<String>()
 
-                for (i in 0 until localWorkouts.length()) {
-                    val w = localWorkouts.getJSONObject(i)
-                    val notionId = w.optString("notion_page_id")
-                    if (notionId.isNotEmpty()) {
-                        localWorkoutNotionIds.add(notionId)
-                    }
-                    val sets = w.optJSONArray("sets")
-                    if (sets != null) {
-                        for (j in 0 until sets.length()) {
-                            val s = sets.getJSONObject(j)
-                            val setNotionId = s.optString("notion_page_id")
-                            if (setNotionId.isNotEmpty()) {
-                                localWorkoutNotionIds.add(setNotionId)
+                    for (i in 0 until localWorkouts.length()) {
+                        val w = localWorkouts.getJSONObject(i)
+                        val notionId = w.optString("notion_page_id")
+                        if (notionId.isNotEmpty()) {
+                            localWorkoutNotionIds.add(notionId)
+                        }
+                        val sets = w.optJSONArray("sets")
+                        if (sets != null) {
+                            for (j in 0 until sets.length()) {
+                                val s = sets.getJSONObject(j)
+                                val setNotionId = s.optString("notion_page_id")
+                                if (setNotionId.isNotEmpty()) {
+                                    localWorkoutNotionIds.add(setNotionId)
+                                }
                             }
                         }
                     }
-                }
 
-                var fetchedCount = 0
+                    var fetchedCount = 0
 
-                // 2. Parse Notion pages and insert missing ones locally
-                for (i in 0 until results.length()) {
-                    val page = results.getJSONObject(i)
-                    val pageId = page.optString("id")
-                    if (pageId.isEmpty()) continue
-                    
-                    syncedNotionPageIds.add(pageId)
-
-                    // If this Notion page is not synced locally, import it
-                    if (!localWorkoutNotionIds.contains(pageId)) {
-                        val properties = page.optJSONObject("properties") ?: continue
+                    // 2. Parse Notion pages and insert missing ones locally
+                    for (i in 0 until results.length()) {
+                        val page = results.getJSONObject(i)
+                        val pageId = page.optString("id")
+                        if (pageId.isEmpty()) continue
                         
-                        val nameObj = properties.optJSONObject("Name")
-                        val nameArray = nameObj?.optJSONArray("title")
-                        val title = if (nameArray != null && nameArray.length() > 0) {
-                            nameArray.getJSONObject(0).optJSONObject("text")?.optString("content") ?: "Workout"
-                        } else "Workout"
+                        syncedNotionPageIds.add(pageId)
 
-                        val dateObj = properties.optJSONObject("Date")?.optJSONObject("date")
-                        val startedAt = dateObj?.optString("start") ?: ""
-
-                        val volume = properties.optJSONObject("Volume")?.optDouble("number", 0.0) ?: 0.0
-                        val duration = properties.optJSONObject("Duration(min)")?.optInt("number", 0) ?: 0
-                        val reps = properties.optJSONObject("Reps")?.optInt("number", 0) ?: 0
-                        val weight = properties.optJSONObject("Weight")?.optDouble("number", 0.0) ?: 0.0
-                        val type = properties.optJSONObject("Type")?.optJSONObject("select")?.optString("name") ?: "Working"
-
-                        val newLocalWorkout = JSONObject().apply {
-                            put("id", pageId)
-                            put("notion_page_id", pageId)
-                            put("title", title)
-                            put("started_at", startedAt)
-                            put("completed_at", startedAt)
-                            put("total_volume_kg", volume)
-                            put("duration_seconds", duration * 60)
-                            put("total_sets", 1)
-                            put("total_reps", reps)
+                        // If this Notion page is not synced locally, import it
+                        if (!localWorkoutNotionIds.contains(pageId)) {
+                            val properties = page.optJSONObject("properties") ?: continue
                             
-                            val setsArr = JSONArray().put(JSONObject().apply {
-                                put("set_number", 1)
-                                put("weight_kg", weight)
-                                put("reps", reps)
-                                put("rpe", 8.0)
+                            val nameObj = properties.optJSONObject("Name")
+                            val nameArray = nameObj?.optJSONArray("title")
+                            val title = if (nameArray != null && nameArray.length() > 0) {
+                                nameArray.getJSONObject(0).optJSONObject("text")?.optString("content") ?: "Workout"
+                            } else "Workout"
+
+                            val dateObj = properties.optJSONObject("Date")?.optJSONObject("date")
+                            val startedAt = dateObj?.optString("start") ?: ""
+
+                            val volume = properties.optJSONObject("Volume")?.optDouble("number", 0.0) ?: 0.0
+                            val duration = properties.optJSONObject("Duration(min)")?.optInt("number", 0) ?: 0
+                            val reps = properties.optJSONObject("Reps")?.optInt("number", 0) ?: 0
+                            val weight = properties.optJSONObject("Weight")?.optDouble("number", 0.0) ?: 0.0
+                            val type = properties.optJSONObject("Type")?.optJSONObject("select")?.optString("name") ?: "Working"
+
+                            val newLocalWorkout = JSONObject().apply {
+                                put("id", pageId)
                                 put("notion_page_id", pageId)
-                            })
-                            put("sets", setsArr)
+                                put("title", title)
+                                put("started_at", startedAt)
+                                put("completed_at", startedAt)
+                                put("total_volume_kg", volume)
+                                put("duration_seconds", duration * 60)
+                                put("total_sets", 1)
+                                put("total_reps", reps)
+                                
+                                val setsArr = JSONArray().put(JSONObject().apply {
+                                    put("set_number", 1)
+                                    put("weight_kg", weight)
+                                    put("reps", reps)
+                                    put("rpe", 8.0)
+                                    put("notion_page_id", pageId)
+                                })
+                                put("sets", setsArr)
+                            }
+                            localWorkouts.put(newLocalWorkout)
+                            localWorkoutNotionIds.add(pageId)
+                            fetchedCount++
                         }
-                        localWorkouts.put(newLocalWorkout)
-                        localWorkoutNotionIds.add(pageId)
-                        fetchedCount++
                     }
-                }
 
-                if (fetchedCount > 0) {
-                    writeJsonArray("workouts.json", localWorkouts)
-                }
+                    if (fetchedCount > 0) {
+                        writeJsonArray("workouts.json", localWorkouts)
+                    }
 
-                // 3. Push/Update local workouts/sets to Notion
-                var pushedCount = 0
-                var updatedCount = 0
-                
-                for (i in 0 until localWorkouts.length()) {
-                    val localW = localWorkouts.getJSONObject(i)
-                    val sets = localW.optJSONArray("sets")
+                    // 3. Push/Update local workouts/sets to Notion
+                    var pushedCount = 0
+                    var updatedCount = 0
                     
-                    if (sets != null && sets.length() > 0) {
-                        for (j in 0 until sets.length()) {
-                            val s = sets.getJSONObject(j)
-                            val notionId = s.optString("notion_page_id")
-                            
+                    for (i in 0 until localWorkouts.length()) {
+                        val localW = localWorkouts.getJSONObject(i)
+                        val sets = localW.optJSONArray("sets")
+                        
+                        if (sets != null && sets.length() > 0) {
+                            for (j in 0 until sets.length()) {
+                                val s = sets.getJSONObject(j)
+                                val notionId = s.optString("notion_page_id")
+                                
+                                if (notionId.isEmpty() || !syncedNotionPageIds.contains(notionId)) {
+                                    val createdPageId = pushSetToNotionSync(token, dbId, localW, s)
+                                    if (createdPageId != null) {
+                                        s.put("notion_page_id", createdPageId)
+                                        pushedCount++
+                                    }
+                                } else {
+                                    // Update existing page
+                                    val updatedPageId = pushSetToNotionSync(token, dbId, localW, s)
+                                    if (updatedPageId != null) {
+                                        updatedCount++
+                                    }
+                                }
+                            }
+                        } else {
+                            // Cardio or legacy without sets array
+                            val notionId = localW.optString("notion_page_id")
                             if (notionId.isEmpty() || !syncedNotionPageIds.contains(notionId)) {
-                                val createdPageId = pushSetToNotionSync(token, dbId, localW, s)
+                                val createdPageId = pushSetToNotionSync(token, dbId, localW, null)
                                 if (createdPageId != null) {
-                                    s.put("notion_page_id", createdPageId)
+                                    localW.put("notion_page_id", createdPageId)
                                     pushedCount++
                                 }
                             } else {
-                                // Update existing page
-                                val updatedPageId = pushSetToNotionSync(token, dbId, localW, s)
+                                val updatedPageId = pushSetToNotionSync(token, dbId, localW, null)
                                 if (updatedPageId != null) {
                                     updatedCount++
                                 }
                             }
                         }
-                    } else {
-                        // Cardio or legacy without sets array
-                        val notionId = localW.optString("notion_page_id")
-                        if (notionId.isEmpty() || !syncedNotionPageIds.contains(notionId)) {
-                            val createdPageId = pushSetToNotionSync(token, dbId, localW, null)
-                            if (createdPageId != null) {
-                                localW.put("notion_page_id", createdPageId)
-                                pushedCount++
-                            }
-                        } else {
-                            val updatedPageId = pushSetToNotionSync(token, dbId, localW, null)
-                            if (updatedPageId != null) {
-                                updatedCount++
-                            }
-                        }
                     }
-                }
 
-                if (pushedCount > 0 || updatedCount > 0) {
-                    writeJsonArray("workouts.json", localWorkouts)
-                }
+                    if (pushedCount > 0 || updatedCount > 0) {
+                        writeJsonArray("workouts.json", localWorkouts)
+                    }
 
-                onSuccess("Sync complete. Fetched $fetchedCount from Notion. Pushed $pushedCount new items, updated $updatedCount items in Notion.")
-            } catch (e: Exception) {
-                onError("Sync error: ${e.message ?: "Unknown error"}")
+                    onSuccess("Sync complete. Fetched $fetchedCount from Notion. Pushed $pushedCount new items, updated $updatedCount items in Notion.")
+                } catch (e: Exception) {
+                    onError("Sync error: ${e.message ?: "Unknown error"}")
+                }
             }
         }
     }

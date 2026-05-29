@@ -107,7 +107,7 @@ class AiChatViewModel : ViewModel() {
             messages.add(ChatMessage("Thinking...", false))
             val messageIndex = messages.size - 1
             
-            val response = callNvidiaApi(text)
+            val response = callOpenRouterApi(text)
             
             messages[messageIndex] = ChatMessage("", false)
             val words = response.split(" ")
@@ -121,7 +121,7 @@ class AiChatViewModel : ViewModel() {
         }
     }
 
-    private suspend fun callNvidiaApi(userMessage: String): String {
+    private suspend fun callOpenRouterApi(userMessage: String): String {
         val messagesArr = JSONArray()
         
         // System message
@@ -156,9 +156,9 @@ class AiChatViewModel : ViewModel() {
     }
 
     private suspend fun executeChatCompletion(messagesArr: JSONArray): String {
-        val apiKey = "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"
-        val baseUrl = "https://integrate.api.nvidia.com/v1"
-        val modelName = "minimaxai/minimax-m2.7"
+        val apiKey = com.gymtracker.BuildConfig.OPENROUTER_API_KEY
+        val baseUrl = "https://openrouter.ai/api/v1"
+        val modelName = "deepseek/deepseek-v4-flash"
 
         val toolsArr = JSONArray().apply {
             // update_plan

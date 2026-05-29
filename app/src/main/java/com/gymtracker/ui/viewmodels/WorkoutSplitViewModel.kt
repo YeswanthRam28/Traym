@@ -68,6 +68,37 @@ class WorkoutSplitViewModel : ViewModel() {
         }
     }
 
+    fun updateDayName(dayIndex: Int, newName: String) {
+        val currentDays = _uiState.value.days.toMutableList()
+        if (dayIndex in currentDays.indices) {
+            currentDays[dayIndex] = currentDays[dayIndex].copy(dayName = newName)
+            _uiState.value = _uiState.value.copy(days = currentDays)
+        }
+    }
+
+    fun addDay() {
+        val currentDays = _uiState.value.days.toMutableList()
+        currentDays.add(WorkoutDay("NEW DAY", "NEW SPLIT", emptyList()))
+        _uiState.value = _uiState.value.copy(days = currentDays)
+    }
+
+    fun removeDay(dayIndex: Int) {
+        val currentDays = _uiState.value.days.toMutableList()
+        if (dayIndex in currentDays.indices) {
+            currentDays.removeAt(dayIndex)
+            _uiState.value = _uiState.value.copy(days = currentDays)
+        }
+    }
+
+    fun moveDay(fromIndex: Int, toIndex: Int) {
+        val currentDays = _uiState.value.days.toMutableList()
+        if (fromIndex in currentDays.indices && toIndex in currentDays.indices) {
+            val day = currentDays.removeAt(fromIndex)
+            currentDays.add(toIndex, day)
+            _uiState.value = _uiState.value.copy(days = currentDays)
+        }
+    }
+
     fun updateExercise(dayIndex: Int, exerciseIndex: Int, updatedExercise: PlannedExercise) {
         val currentDays = _uiState.value.days.toMutableList()
         if (dayIndex in currentDays.indices) {
@@ -159,8 +190,12 @@ class WorkoutSplitViewModel : ViewModel() {
         savePlan()
     }
 
+    private val saveJobs = mutableMapOf<String, kotlinx.coroutines.Job>()
+
     private fun saveInlineLog(dayTitle: String, exercise: PlannedExercise) {
-        viewModelScope.launch {
+        saveJobs[exercise.name]?.cancel()
+        saveJobs[exercise.name] = viewModelScope.launch {
+            kotlinx.coroutines.delay(2000) // Debounce for 2 seconds
             try {
                 val completed = exercise.actualSets.filter { it.isCompleted }
                 val setLogs = completed.mapIndexed { i, s ->
@@ -338,65 +373,66 @@ class WorkoutSplitViewModel : ViewModel() {
 
     private fun getDefaultSplit(): List<WorkoutDay> {
         return listOf(
-            WorkoutDay("MON", "PULL A", listOf(
-                PlannedExercise("Overhand / Neutral Pull-up", 3, 8),
-                PlannedExercise("Seated Cable Row", 3, 10),
-                PlannedExercise("Neutral / Overhand Lat Pulldown", 3, 10),
-                PlannedExercise("Incline DB Row", 3, 10),
-                PlannedExercise("Face Pull", 3, 12),
-                PlannedExercise("Machine Reverse Delt Fly", 3, 12),
-                PlannedExercise("Dumbbell Shrug", 3, 12),
-                PlannedExercise("Side Plank", 3, 1)
+            WorkoutDay("MON", "PULL A (BACK & REAR DELTS)", listOf(
+                PlannedExercise("Overhand / Neutral Pull-up", 3, 12),
+                PlannedExercise("Seated Cable Row", 3, 15),
+                PlannedExercise("Neutral / Overhand Lat Pulldown", 3, 15),
+                PlannedExercise("Incline DB Row (Neutral / Semi-pronated)", 3, 12),
+                PlannedExercise("Face Pull", 3, 15),
+                PlannedExercise("Machine Reverse Delt Fly", 3, 15),
+                PlannedExercise("Dumbbell Shrug", 3, 15)
             )),
-            WorkoutDay("TUE", "PUSH A", listOf(
-                PlannedExercise("Push-up", 3, 12),
-                PlannedExercise("Flat Barbell / DB Bench Press", 3, 10),
-                PlannedExercise("Incline DB / Barbell Press", 3, 10),
-                PlannedExercise("Pec Deck / Incline DB Fly / Flat DB Fly", 3, 12),
-                PlannedExercise("DB Shoulder Press", 3, 10),
-                PlannedExercise("Seated DB Lateral Raise / Single-arm Cable Lateral Raise", 3, 12),
-                PlannedExercise("Push-up Plus", 3, 15),
-                PlannedExercise("Leg Raise", 3, 15)
+            WorkoutDay("TUE", "PUSH A (CHEST & SHOULDERS)", listOf(
+                PlannedExercise("Push-up", 3, 15),
+                PlannedExercise("Flat Barbell / DB Bench Press", 3, 15),
+                PlannedExercise("Incline DB / Barbell Press", 3, 12),
+                PlannedExercise("Pec Deck / Incline DB Fly / Flat DB Fly", 3, 15),
+                PlannedExercise("DB Shoulder Press", 3, 15),
+                PlannedExercise("Seated DB Lateral Raise / Single-arm Cable Lateral Raise", 3, 15),
+                PlannedExercise("Push-up Plus", 3, 20)
             )),
             WorkoutDay("WED", "LEGS", listOf(
-                PlannedExercise("Squat Variation", 3, 10),
-                PlannedExercise("Leg Press", 3, 12),
-                PlannedExercise("Lying Leg Curl", 3, 12),
-                PlannedExercise("Romanian Deadlift", 3, 10),
-                PlannedExercise("Leg Extension", 3, 12),
-                PlannedExercise("Weighted Hyperextension", 3, 12),
-                PlannedExercise("Standing / Seated Calf Raise", 3, 15),
-                PlannedExercise("Hip Abduction Machine / Cable Hip Abduction", 3, 15),
-                PlannedExercise("Tibialis Raise", 3, 15)
+                PlannedExercise("Smith Machine / Barbell / DB Goblet Squat", 3, 12),
+                PlannedExercise("Leg Press", 3, 15),
+                PlannedExercise("Lying Leg Curl", 3, 15),
+                PlannedExercise("45° Hyperextension / Back Extension", 3, 15),
+                PlannedExercise("Leg Extension", 3, 15),
+                PlannedExercise("Bulgarian Split Squat / Walking Lunges", 3, 12),
+                PlannedExercise("Standing / Seated Machine Calf Raise", 3, 20),
+                PlannedExercise("Hip Abduction Machine / Cable Hip Abduction", 3, 20),
+                PlannedExercise("Adductor Machine", 3, 20),
+                PlannedExercise("Tibialis Raise", 3, 20)
             )),
-            WorkoutDay("THU", "PULL B", listOf(
-                PlannedExercise("Neutral / Underhand Chin-up", 3, 8),
-                PlannedExercise("Single-arm DB Row", 3, 10),
-                PlannedExercise("DB Pullover / Machine Pullover", 3, 12),
-                PlannedExercise("Dumbbell Shrug", 3, 12),
-                PlannedExercise("Reverse Curl", 3, 12),
-                PlannedExercise("Incline DB Rear Delt Fly", 3, 12),
-                PlannedExercise("Hollow Body Hold", 3, 30)
+            WorkoutDay("THU", "PULL B (BACK & BICEPS)", listOf(
+                PlannedExercise("Neutral / Underhand Chin-up", 3, 12),
+                PlannedExercise("Single-arm DB Row", 3, 15),
+                PlannedExercise("Straight-arm Rope Pulldown", 3, 15),
+                PlannedExercise("Hammer Curl", 3, 15),
+                PlannedExercise("Reverse Curl", 3, 15),
+                PlannedExercise("Incline DB Rear Delt Fly", 3, 15),
+                PlannedExercise("Incline DB Curl (Supinated)", 3, 15)
             )),
-            WorkoutDay("FRI", "PUSH B", listOf(
-                PlannedExercise("DB Floor Press", 3, 12),
-                PlannedExercise("Close-Grip / Neutral-Grip Bench Press", 3, 10),
-                PlannedExercise("Cable Chest Fly", 3, 12),
-                PlannedExercise("Standing Overhead DB / Barbell Press", 3, 10),
-                PlannedExercise("Machine Shoulder Press", 3, 12),
-                PlannedExercise("Upright Row", 3, 12),
-                PlannedExercise("Cable Woodchop / Pallof Press", 3, 12),
-                PlannedExercise("Neck Flexion", 3, 15),
-                PlannedExercise("Neck Extension", 3, 15)
+            WorkoutDay("FRI", "PUSH B (CHEST & SHOULDERS)", listOf(
+                PlannedExercise("Chest-Focused Dips", 3, 15),
+                PlannedExercise("Close-Grip / Neutral-Grip Bench Press", 3, 15),
+                PlannedExercise("DB Fly (Flat or Incline Bench)", 3, 15),
+                PlannedExercise("Standing Overhead DB / Barbell Press", 3, 12),
+                PlannedExercise("Machine Shoulder Press", 3, 15),
+                PlannedExercise("Upright Row (Cable / Barbell)", 3, 15),
+                PlannedExercise("Overhead Tricep Extension (Cable / EZ-bar)", 3, 15),
+                PlannedExercise("Serratus Punch (Cable, Single Side)", 3, 15),
+                PlannedExercise("Neck Flexion", 3, 20),
+                PlannedExercise("Neck Extension", 3, 20)
             )),
-            WorkoutDay("SAT", "CARDIO + STAMINA", listOf(
-                PlannedExercise("Walk (Warm-up)", 1, 5),
-                PlannedExercise("Run (Main)", 1, 10),
+            WorkoutDay("SAT", "CARDIO + CORE", listOf(
+                PlannedExercise("Run", 1, 10),
                 PlannedExercise("Walk/Rest", 1, 3),
-                PlannedExercise("Run (Main)", 1, 15),
+                PlannedExercise("Run", 1, 15),
                 PlannedExercise("Incline Walk", 1, 10),
-                PlannedExercise("Walk (Cool-down)", 1, 5),
-                PlannedExercise("Stretch (Cool-down)", 1, 5)
+                PlannedExercise("Side Plank", 3, 1),
+                PlannedExercise("Leg Raise", 3, 20),
+                PlannedExercise("Hollow Body Hold", 3, 40),
+                PlannedExercise("Cable Woodchop / Pallof Press", 3, 15)
             )),
             WorkoutDay("SUN", "REST", emptyList())
         )

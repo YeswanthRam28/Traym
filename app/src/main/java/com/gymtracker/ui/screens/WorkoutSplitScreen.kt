@@ -26,6 +26,10 @@ import com.gymtracker.ui.viewmodels.PlannedExercise
 import com.gymtracker.ui.viewmodels.WorkoutDay
 import com.gymtracker.ui.viewmodels.WorkoutSplitViewModel
 import com.gymtracker.ui.viewmodels.ActualSet
+import org.burnoutcrew.reorderable.rememberReorderableLazyListState
+import org.burnoutcrew.reorderable.reorderable
+import org.burnoutcrew.reorderable.ReorderableItem
+import org.burnoutcrew.reorderable.detectReorderAfterLongPress
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -82,21 +86,43 @@ fun WorkoutSplitScreen(
         }
     ) { paddingValues ->
         if (selectedDayIndex == null) {
+            val state = rememberReorderableLazyListState(onMove = { from, to ->
+                viewModel.moveDay(from.index, to.index)
+            })
+
             LazyColumn(
+                state = state.listState,
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(paddingValues)
-                    .padding(horizontal = Tokens.PaddingHorizontal),
+                    .padding(horizontal = Tokens.PaddingHorizontal)
+                    .reorderable(state),
                 verticalArrangement = Arrangement.spacedBy(12.dp),
                 contentPadding = PaddingValues(vertical = 24.dp)
             ) {
-                itemsIndexed(uiState.days) { index, day ->
-                    SplitDayCard(
-                        day = day,
-                        isEditMode = isEditMode,
-                        onTitleChange = { viewModel.updateDayTitle(index, it) },
-                        onClick = { selectedDayIndex = index }
-                    )
+                itemsIndexed(uiState.days, key = { index, day -> day.hashCode() + index }) { index, day ->
+                    ReorderableItem(state, key = day.hashCode() + index) { isDragging ->
+                        SplitDayCard(
+                            day = day,
+                            isEditMode = isEditMode,
+                            onTitleChange = { viewModel.updateDayTitle(index, it) },
+                            onNameChange = { viewModel.updateDayName(index, it) },
+                            onRemove = { viewModel.removeDay(index) },
+                            modifier = if (isEditMode) Modifier.detectReorderAfterLongPress(state) else Modifier,
+                            onClick = { selectedDayIndex = index }
+                        )
+                    }
+                }
+                if (isEditMode) {
+                    item {
+                        Button(
+                            onClick = { viewModel.addDay() },
+                            modifier = Modifier.fillMaxWidth().padding(top = 16.dp),
+                            colors = ButtonDefaults.buttonColors(containerColor = Dim)
+                        ) {
+                            Text("+ ADD DAY", color = Acid)
+                        }
+                    }
                 }
             }
         } else {
@@ -206,12 +232,15 @@ fun SplitDayCard(
     day: WorkoutDay,
     isEditMode: Boolean,
     onTitleChange: (String) -> Unit,
+    onNameChange: (String) -> Unit,
+    onRemove: () -> Unit,
+    modifier: Modifier = Modifier,
     onClick: () -> Unit
 ) {
     Card(
         colors = CardDefaults.cardColors(containerColor = if (day.splitTitle == "REST") Dim.copy(alpha = 0.3f) else Dim),
         shape = RoundedCornerShape(0.dp),
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
             .clickable { onClick() }
     ) {
@@ -222,8 +251,31 @@ fun SplitDayCard(
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
+            if (isEditMode) {
+                IconButton(onClick = onRemove, modifier = Modifier.padding(end = 8.dp)) {
+                    Text("✕", color = Color.Red, fontSize = 20.sp)
+                }
+            }
             Column(modifier = Modifier.weight(1f)) {
-                Text(text = day.dayName, style = Typography.labelSmall.copy(color = OffWhite.copy(alpha = 0.6f)))
+                if (isEditMode) {
+                    TextField(
+                        value = day.dayName,
+                        onValueChange = onNameChange,
+                        colors = TextFieldDefaults.colors(
+                            focusedContainerColor = Color.Transparent,
+                            unfocusedContainerColor = Color.Transparent,
+                            unfocusedIndicatorColor = Color.Transparent,
+                            focusedIndicatorColor = Color.Transparent,
+                            cursorColor = Acid,
+                            focusedTextColor = OffWhite.copy(alpha = 0.6f),
+                            unfocusedTextColor = OffWhite.copy(alpha = 0.6f)
+                        ),
+                        textStyle = Typography.labelSmall,
+                        modifier = Modifier.fillMaxWidth().height(48.dp)
+                    )
+                } else {
+                    Text(text = day.dayName, style = Typography.labelSmall.copy(color = OffWhite.copy(alpha = 0.6f)))
+                }
                 Spacer(modifier = Modifier.height(4.dp))
                 if (isEditMode) {
                     TextField(
@@ -251,7 +303,9 @@ fun SplitDayCard(
                     )
                 }
             }
-            if (!isEditMode && day.splitTitle != "REST") {
+            if (isEditMode) {
+                Text(text = "☰", style = Typography.headlineMedium.copy(color = Muted), modifier = Modifier.padding(start = 16.dp))
+            } else if (day.splitTitle != "REST") {
                 Text(text = "→", style = Typography.headlineMedium.copy(color = Acid))
             }
         }
