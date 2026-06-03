@@ -42,15 +42,68 @@ class ProfileViewModel : ViewModel() {
                 val response = ApiClient.apiService.getMe()
                 if (response.isSuccessful) {
                     response.body()?.let { userProfile ->
+                        val historyResponse = ApiClient.apiService.getWorkoutHistory()
+                        var totalWorkouts = 0
+                        var totalVolume = 0.0
+                        var streak = 0
+                        
+                        if (historyResponse.isSuccessful) {
+                            val workouts = historyResponse.body() ?: emptyList()
+                            totalWorkouts = workouts.size
+                            totalVolume = workouts.sumOf { it.total_volume_kg?.toDouble() ?: 0.0 }
+                            
+                            if (workouts.isNotEmpty()) {
+                                val cal = java.util.Calendar.getInstance()
+                                cal.firstDayOfWeek = java.util.Calendar.MONDAY
+                                val currentWeek = cal.get(java.util.Calendar.WEEK_OF_YEAR)
+                                val currentYear = cal.get(java.util.Calendar.YEAR)
+                                val format = java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.US)
+                                
+                                val activeDays = workouts.mapNotNull { 
+                                    try {
+                                        val dateStr = it.started_at?.take(10) ?: ""
+                                        val date = format.parse(dateStr)
+                                        if (date != null) {
+                                            format.format(date)
+                                        } else null
+                                    } catch(e:Exception) { null }
+                                }.toSet()
+                                
+                                var tempStreak = 0
+                                val c = java.util.Calendar.getInstance()
+                                
+                                var checkDateStr = format.format(c.time)
+                                if (!activeDays.contains(checkDateStr)) {
+                                    c.add(java.util.Calendar.DAY_OF_YEAR, -1)
+                                    checkDateStr = format.format(c.time)
+                                }
+                                
+                                while (true) {
+                                    val isSunday = c.get(java.util.Calendar.DAY_OF_WEEK) == java.util.Calendar.SUNDAY
+                                    
+                                    if (activeDays.contains(checkDateStr)) {
+                                        tempStreak++
+                                        c.add(java.util.Calendar.DAY_OF_YEAR, -1)
+                                        checkDateStr = format.format(c.time)
+                                    } else if (isSunday) {
+                                        // Sunday is a free rest day. Don't break the streak, just move to Saturday.
+                                        c.add(java.util.Calendar.DAY_OF_YEAR, -1)
+                                        checkDateStr = format.format(c.time)
+                                    } else {
+                                        break
+                                    }
+                                }
+                                streak = tempStreak
+                            }
+                        }
+
                         _uiState.update {
                             it.copy(
                                 userName = userProfile.name ?: "Unknown Athlete",
                                 philosophy = userProfile.philosophy?.uppercase() ?: "NO PHILOSOPHY SET",
-                                // We don't have streak/workouts/lbsLifted in UserProfileResponse yet, 
-                                // so we keep them at "0" or update later when API expands.
-                                streak = "0",
-                                workouts = "0",
-                                kgLifted = "0"
+                                streak = streak.toString(),
+                                workouts = totalWorkouts.toString(),
+                                kgLifted = String.format("%.0f", totalVolume)
                             )
                         }
                     }

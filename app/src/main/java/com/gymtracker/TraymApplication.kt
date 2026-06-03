@@ -9,7 +9,7 @@ class TraymApplication : Application() {
     override fun onCreate() {
         super.onCreate()
         SessionManager.init(this)
-        cleanLocalDuplicates()
+        // cleanLocalDuplicates() // Disabled to prevent accidental data loss of same-day sessions
     }
 
     private fun cleanLocalDuplicates() {

@@ -10,6 +10,9 @@ object SessionManager {
     private const val KEY_IS_LOGGED_IN = "is_logged_in"
     private const val KEY_AUTH_TOKEN = "auth_token"
     private const val KEY_ONBOARDING_COMPLETE = "onboarding_complete"
+    private const val KEY_USER_NAME = "user_name"
+    private const val KEY_USER_ID = "user_id"
+    private const val KEY_PROFILE_PIC_URL = "profile_pic_url"
 
     private const val KEY_NOTION_TOKEN = "notion_token"
     private const val KEY_NOTION_DATABASE_ID = "notion_database_id"
@@ -17,10 +20,20 @@ object SessionManager {
 
     private lateinit var prefs: SharedPreferences
 
-    private val _isLoggedIn = MutableStateFlow(true) // Always logged in
+    private val _isLoggedIn = MutableStateFlow(false)
     val isLoggedIn: StateFlow<Boolean> = _isLoggedIn
 
-    var authToken: String? = "local_dev_token" // Always authorized
+    var authToken: String? = null
+        set(value) {
+            field = value
+            if (::prefs.isInitialized) {
+                if (value != null) {
+                    prefs.edit().putString(KEY_AUTH_TOKEN, value).apply()
+                } else {
+                    prefs.edit().remove(KEY_AUTH_TOKEN).apply()
+                }
+            }
+        }
 
     var onboardingComplete: Boolean = false
         set(value) {
@@ -35,21 +48,97 @@ object SessionManager {
     fun init(context: Context) {
         appContext = context.applicationContext
         prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-        _isLoggedIn.value = true
-        authToken = "local_dev_token"
-        onboardingComplete = true // Bypassed onboarding
+        
+        val savedToken = prefs.getString(KEY_AUTH_TOKEN, null)
+        authToken = savedToken
+        
+        val loggedIn = prefs.getBoolean(KEY_IS_LOGGED_IN, false) || savedToken != null
+        _isLoggedIn.value = loggedIn
+        
+        onboardingComplete = prefs.getBoolean(KEY_ONBOARDING_COMPLETE, false)
     }
 
-    fun setLoggedIn(loggedIn: Boolean, token: String? = null, onboarded: Boolean = false) {
-        _isLoggedIn.value = true // Ignore logouts from views
-        authToken = "local_dev_token"
-        onboardingComplete = true
+    fun setLoggedIn(loggedIn: Boolean, token: String? = null, userName: String? = null, userId: String? = null, profilePicUrl: String? = null, onboarded: Boolean = true) {
+        _isLoggedIn.value = loggedIn
+        authToken = token
+        onboardingComplete = onboarded
 
         prefs.edit().apply {
-            putBoolean(KEY_IS_LOGGED_IN, true)
-            putString(KEY_AUTH_TOKEN, "local_dev_token")
+            putBoolean(KEY_IS_LOGGED_IN, loggedIn)
+            if (token != null) {
+                putString(KEY_AUTH_TOKEN, token)
+            } else {
+                remove(KEY_AUTH_TOKEN)
+            }
+            if (userName != null) {
+                putString(KEY_USER_NAME, userName)
+            }
+            if (userId != null) {
+                putString(KEY_USER_ID, userId)
+            } else if (!loggedIn) {
+                remove(KEY_USER_ID)
+            }
+            if (profilePicUrl != null) {
+                putString(KEY_PROFILE_PIC_URL, profilePicUrl)
+            } else if (!loggedIn) {
+                remove(KEY_PROFILE_PIC_URL)
+            }
             putBoolean(KEY_ONBOARDING_COMPLETE, onboarded)
             apply()
+        }
+        
+        // Update profile.json if userName is provided
+        if (userName != null && ::appContext.isInitialized) {
+            try {
+                val file = java.io.File(appContext.filesDir, "profile.json")
+                val json = if (file.exists()) {
+                    org.json.JSONObject(file.readText())
+                } else {
+                    org.json.JSONObject().apply {
+                        put("email", "athlete@example.com")
+                        put("goal", "muscle hypertrophy")
+                        put("philosophy", "hypertrophy")
+                        put("onboarding_complete", true)
+                    }
+                }
+                json.put("name", userName)
+                file.writeText(json.toString())
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+        }
+        
+        if (token != null) {
+            com.gymtracker.network.ApiClient.setAuthToken(token)
+        }
+    }
+
+    fun getUserName(): String {
+        return if (::prefs.isInitialized) {
+            prefs.getString(KEY_USER_NAME, "Athlete") ?: "Athlete"
+        } else {
+            "Athlete"
+        }
+    }
+
+    fun getUserId(): String {
+        return if (::prefs.isInitialized) {
+            var id = prefs.getString(KEY_USER_ID, null)
+            if (id == null) {
+                id = java.util.UUID.randomUUID().toString()
+                prefs.edit().putString(KEY_USER_ID, id).apply()
+            }
+            id
+        } else {
+            "anonymous"
+        }
+    }
+
+    fun getProfilePicUrl(): String? {
+        return if (::prefs.isInitialized) {
+            prefs.getString(KEY_PROFILE_PIC_URL, null)
+        } else {
+            null
         }
     }
 
@@ -71,9 +160,9 @@ object SessionManager {
     fun clearLocalData() {
         if (::prefs.isInitialized) {
             prefs.edit().clear().apply()
-            _isLoggedIn.value = true
-            authToken = "local_dev_token"
-            onboardingComplete = true
+            _isLoggedIn.value = false
+            authToken = null
+            onboardingComplete = false
         }
         // Delete local JSON files
         try {

@@ -26,7 +26,7 @@ val MainNavItems = listOf(
     NavItem("EXPLORE", R.drawable.ic_nav_explore, "explore"),
     NavItem("WORKOUT", R.drawable.ic_nav_workout, "workout"),
     NavItem("COACH", R.drawable.ic_nav_coach, "chat"),
-    NavItem("PROGRESS", R.drawable.ic_nav_progress, "progress")
+    NavItem("COMMUNITY", R.drawable.ic_nav_community, "community")
 )
 
 @Composable
@@ -38,9 +38,9 @@ fun NavBar(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .height(Tokens.BottomNavHeight)
             .background(AppBlack) // Plain background
-            .navigationBarsPadding(),
+            .navigationBarsPadding()
+            .height(Tokens.BottomNavHeight),
         horizontalArrangement = Arrangement.SpaceEvenly,
         verticalAlignment = Alignment.CenterVertically
     ) {

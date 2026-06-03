@@ -130,6 +130,12 @@ class AiChatViewModel : ViewModel() {
             Your purpose is to motivate, advise, analyze form, and suggest plan modifications.
             Always maintain a helpful, encouraging, and expert tone. Keep responses relatively concise but highly informative and practical.
             
+            CRITICAL FORMATTING RULES:
+            - NEVER use raw Markdown symbols (do NOT use **bold**, *italics*, # headers, etc).
+            - Output clean, conversational plain-text only.
+            - Use generous newlines and natural spacing to separate paragraphs.
+            - You may use a dash (-) for list items.
+
             You have access to tools that can directly modify the user's plan, update their profile settings, or run a Notion sync. If the user asks you to modify their training days, exercises, or sets/reps, or update their details, or backup/sync, use the appropriate tool.
             
             Here is the current state of the user's progress, training plan, and history:
@@ -158,7 +164,7 @@ class AiChatViewModel : ViewModel() {
     private suspend fun executeChatCompletion(messagesArr: JSONArray): String {
         val apiKey = com.gymtracker.BuildConfig.OPENROUTER_API_KEY
         val baseUrl = "https://openrouter.ai/api/v1"
-        val modelName = "deepseek/deepseek-v4-flash"
+        val modelName = "deepseek/deepseek-chat"
 
         val toolsArr = JSONArray().apply {
             // update_plan

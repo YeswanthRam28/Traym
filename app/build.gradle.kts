@@ -30,6 +30,8 @@ android {
         }
         buildConfigField("String", "OPENROUTER_API_KEY", "\"${envProps.getProperty("OPENROUTER_API_KEY", "")}\"")
         buildConfigField("String", "RAPID_API_KEY", "\"${envProps.getProperty("RAPID_API_KEY", "")}\"")
+        buildConfigField("String", "CLERK_PUBLISHABLE_KEY", "\"${envProps.getProperty("CLERK_PUBLISHABLE_KEY", "")}\"")
+        buildConfigField("String", "NEON_DATABASE_URL", "\"${envProps.getProperty("NEON_DATABASE_URL", "")}\"")
     }
 
     buildTypes {
@@ -82,7 +84,9 @@ dependencies {
     implementation("io.coil-kt:coil-gif:2.6.0")
 
     // Networking
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.3")
     implementation("com.squareup.retrofit2:retrofit:2.11.0")
+    implementation("org.postgresql:postgresql:42.2.5") // Downgraded for Android compatibility
     implementation("com.squareup.retrofit2:converter-gson:2.11.0")
     implementation("com.squareup.okhttp3:logging-interceptor:4.12.0")
 
@@ -96,6 +100,11 @@ dependencies {
             strictly("1.8.0")
         }
     }
+
+    // Google Identity & Credential Manager
+    implementation("androidx.credentials:credentials:1.2.2")
+    implementation("androidx.credentials:credentials-play-services-auth:1.2.2")
+    implementation("com.google.android.libraries.identity.googleid:googleid:1.1.1")
 
     testImplementation("junit:junit:4.13.2")
     androidTestImplementation("androidx.test.ext:junit:1.1.5")

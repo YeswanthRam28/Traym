@@ -7,6 +7,8 @@ Traym allows you to manage your fitness journey with customizable workout splits
 - **Dynamic Workout Splits**: Completely customizable drag-and-drop daily routines.
 - **AI Chat Coach**: Built-in AI powered by OpenRouter for fitness advice.
 - **Rich Exercise Database**: Backed by RapidAPI for comprehensive exercise instructions.
+- **Community Leaderboard**: Compete globally based on weekly volume (backed by Neon PostgreSQL).
+- **Notion Sync**: Seamlessly sync your workout history to a Notion database.
 - **Offline & Sync Capabilities**: Robust state management syncing with your local device.
 
 ## 🛠️ Setup Instructions

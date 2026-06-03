@@ -5,6 +5,8 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
@@ -26,13 +28,14 @@ import com.gymtracker.ui.viewmodels.HomeViewModel
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Person
 
-data class PrItem(val name: String, val weight: String)
+data class PrItem(val name: String, val weight: String, val isBigThree: Boolean = false)
 
 data class HomeUiState(
     val volume: String = "0",
     val todayWorkoutTitle: String = "NO SCHEDULED WORKOUT",
     val todayWorkoutDesc: String = "",
-    val recentPrs: List<PrItem> = emptyList()
+    val recentPrs: List<PrItem> = emptyList(),
+    val profilePicUrl: String? = null
 )
 
 @Composable
@@ -63,9 +66,10 @@ currentRoute = currentRoute,
                 .fillMaxSize()
                 .padding(paddingValues)
                 .padding(horizontal = Tokens.PaddingHorizontal)
+                .verticalScroll(rememberScrollState())
                 .statusBarsPadding()
         ) {
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(16.dp))
             
             // Header
             Row(
@@ -85,16 +89,25 @@ currentRoute = currentRoute,
                         .clickable { onNavigate("profile") },
                     contentAlignment = Alignment.Center
                 ) {
-                    Icon(
-                        imageVector = Icons.Default.Person,
-                        contentDescription = "My Profile",
-                        tint = Acid,
-                        modifier = Modifier.size(24.dp)
-                    )
+                    if (uiState.profilePicUrl != null) {
+                        coil.compose.AsyncImage(
+                            model = uiState.profilePicUrl,
+                            contentDescription = "Profile Picture",
+                            modifier = Modifier.fillMaxSize(),
+                            contentScale = androidx.compose.ui.layout.ContentScale.Crop
+                        )
+                    } else {
+                        Icon(
+                            imageVector = Icons.Default.Person,
+                            contentDescription = "My Profile",
+                            tint = Acid,
+                            modifier = Modifier.size(24.dp)
+                        )
+                    }
                 }
             }
             
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(16.dp))
             
             // Hero Stat Card
             Card(
@@ -144,45 +157,74 @@ currentRoute = currentRoute,
                 }
             }
             
-            Spacer(modifier = Modifier.height(32.dp))
+            Spacer(modifier = Modifier.height(24.dp))
             
-            Text(
-                text = "RECENT PRs",
-                style = Typography.labelLarge.copy(color = OffWhite)
-            )
-            Spacer(modifier = Modifier.height(12.dp))
-            
-            LazyRow(
-                horizontalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-                items(uiState.recentPrs) { pr ->
-                    Card(
-                        colors = CardDefaults.cardColors(containerColor = AppBlack),
-                        shape = RoundedCornerShape(0.dp),
-                        elevation = CardDefaults.cardElevation(0.dp),
-                        modifier = Modifier
-                            .width(140.dp)
-                            .height(Tokens.CardHeight)
-                    ) {
-                        Column(
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .padding(12.dp),
-                            verticalArrangement = Arrangement.Center
-                        ) {
-                            Text(
-                                text = pr.name,
-                                style = Typography.labelMedium.copy(color = OffWhite.copy(alpha = 0.6f))
-                            )
-                            Spacer(modifier = Modifier.height(4.dp))
-                            Text(
-                                text = pr.weight,
-                                style = Typography.titleLarge.copy(color = OffWhite)
-                            )
-                        }
+            val bigThreePrs = uiState.recentPrs.filter { it.isBigThree }
+            val recentPrs = uiState.recentPrs.filter { !it.isBigThree }
+
+            if (bigThreePrs.isNotEmpty()) {
+                Text(
+                    text = "BIG 3 PRs",
+                    style = Typography.labelLarge.copy(color = OffWhite)
+                )
+                Spacer(modifier = Modifier.height(12.dp))
+                
+                LazyRow(
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    items(bigThreePrs) { pr ->
+                        PrCard(pr)
+                    }
+                }
+                Spacer(modifier = Modifier.height(24.dp))
+            }
+
+            if (recentPrs.isNotEmpty()) {
+                Text(
+                    text = "RECENT PRs",
+                    style = Typography.labelLarge.copy(color = OffWhite)
+                )
+                Spacer(modifier = Modifier.height(16.dp))
+                
+                LazyRow(
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    items(recentPrs) { pr ->
+                        PrCard(pr)
                     }
                 }
             }
+        }
+    }
+}
+
+@Composable
+fun PrCard(pr: PrItem) {
+    Card(
+        colors = CardDefaults.cardColors(containerColor = AppBlack),
+        shape = RoundedCornerShape(0.dp),
+        elevation = CardDefaults.cardElevation(0.dp),
+        modifier = Modifier
+            .width(180.dp)
+            .height(100.dp)
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(12.dp),
+            verticalArrangement = Arrangement.SpaceBetween
+        ) {
+            Text(
+                text = pr.name,
+                style = Typography.labelMedium.copy(color = OffWhite.copy(alpha = 0.6f)),
+                maxLines = 3,
+                overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
+            )
+            Spacer(modifier = Modifier.height(4.dp))
+            Text(
+                text = pr.weight,
+                style = Typography.titleLarge.copy(color = OffWhite)
+            )
         }
     }
 }

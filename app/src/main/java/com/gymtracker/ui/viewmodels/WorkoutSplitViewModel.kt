@@ -8,6 +8,8 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import org.json.JSONObject
 
 data class ActualSet(
@@ -164,7 +166,6 @@ class WorkoutSplitViewModel : ViewModel() {
         currentDays[dayIndex] = day.copy(exercises = exercises, lastLoggedDate = todayStr)
         _uiState.value = _uiState.value.copy(days = currentDays)
 
-        saveInlineLog(day.splitTitle, exercises[exerciseIndex])
         savePlan()
     }
 
@@ -184,20 +185,17 @@ class WorkoutSplitViewModel : ViewModel() {
         currentDays[dayIndex] = day.copy(exercises = exercises, lastLoggedDate = todayStr)
         _uiState.value = _uiState.value.copy(days = currentDays)
         
-        if (currentSet.isCompleted) {
-            saveInlineLog(day.splitTitle, exercises[exerciseIndex])
-        }
         savePlan()
     }
 
-    private val saveJobs = mutableMapOf<String, kotlinx.coroutines.Job>()
-
-    private fun saveInlineLog(dayTitle: String, exercise: PlannedExercise) {
-        saveJobs[exercise.name]?.cancel()
-        saveJobs[exercise.name] = viewModelScope.launch {
-            kotlinx.coroutines.delay(2000) // Debounce for 2 seconds
+    fun saveExercise(dayIndex: Int, exerciseIndex: Int) {
+        viewModelScope.launch {
             try {
+                val day = _uiState.value.days[dayIndex]
+                val exercise = day.exercises[exerciseIndex]
                 val completed = exercise.actualSets.filter { it.isCompleted }
+                if (completed.isEmpty()) return@launch
+
                 val setLogs = completed.mapIndexed { i, s ->
                     com.gymtracker.network.SetLog(
                         exercise_name = exercise.name,
@@ -211,13 +209,18 @@ class WorkoutSplitViewModel : ViewModel() {
                 
                 ApiClient.apiService.logInlineWorkout(
                     com.gymtracker.network.InlineLogRequest(
-                        dayTitle = dayTitle,
+                        dayTitle = day.splitTitle,
                         exerciseName = exercise.name,
                         sets = setLogs
                     )
                 )
                 
                 loadHistory()
+                
+                // Immediately sync with Notion to capture the batch sets flawlessly
+                withContext(Dispatchers.IO) {
+                    com.gymtracker.network.NotionSyncManager.syncWithNotion({}, {})
+                }
             } catch (e: Exception) {
                 e.printStackTrace()
             }

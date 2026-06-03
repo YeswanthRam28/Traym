@@ -15,7 +15,7 @@ import kotlinx.coroutines.sync.withLock
 
 class LocalTraymApiService : TraymApiService {
 
-    private val dateFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", Locale.US)
+    private val dateFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssXXX", Locale.US)
     private var exercisesDbCache: JSONArray? = null
     private val fileMutex = Mutex()
 
@@ -399,7 +399,10 @@ class LocalTraymApiService : TraymApiService {
 
     private fun isBigThree(exerciseName: String): Boolean {
         val lower = exerciseName.lowercase()
-        return lower.contains("bench press") || lower.contains("deadlift") || lower.contains("squat")
+        val isSquat = lower.contains("squat") && !lower.contains("bulgarian") && !lower.contains("split") && !lower.contains("hack") && !lower.contains("goblet") && !lower.contains("sissy")
+        val isBench = lower.contains("bench press") && !lower.contains("close") && !lower.contains("incline") && !lower.contains("decline") && !lower.contains("dumbbell")
+        val isDeadlift = lower.contains("deadlift") && !lower.contains("romanian") && !lower.contains("stiff") && !lower.contains("rdl")
+        return isSquat || isBench || isDeadlift
     }
 
     override suspend fun completeWorkout(workoutId: String, body: CompleteWorkoutRequest): Response<WorkoutSummaryResponse> {
@@ -674,16 +677,63 @@ class LocalTraymApiService : TraymApiService {
     }
 
     override suspend fun getPRs(): Response<List<PrResponse>> {
-        val prs = readJson("prs.json")
-        val list = mutableListOf<PrResponse>()
-        val keys = prs.keys()
-        while (keys.hasNext()) {
-            val key = keys.next()
-            if (isBigThree(key)) {
-                val weight = prs.optDouble(key, 0.0)
-                list.add(PrResponse(exercise = key, weight_kg = weight.toFloat()))
+        val workouts = readJsonArray("workouts.json")
+        val maxWeights = mutableMapOf<String, Double>()
+        val recentPrEvents = mutableListOf<Pair<String, Double>>()
+
+        // Extract to list for chronological sorting
+        val workoutList = mutableListOf<JSONObject>()
+        for (i in 0 until workouts.length()) {
+            workoutList.add(workouts.getJSONObject(i))
+        }
+        // Sort chronologically (oldest to newest) to detect PR break events properly
+        workoutList.sortBy { it.optString("started_at") }
+
+        for (w in workoutList) {
+            val title = w.optString("title")
+            val sets = w.optJSONArray("sets") ?: continue
+            var brokePr = false
+            var newMax = maxWeights[title] ?: 0.0
+
+            for (j in 0 until sets.length()) {
+                val s = sets.getJSONObject(j)
+                val weight = s.optDouble("weight_kg", 0.0)
+                if (weight > newMax) {
+                    newMax = weight
+                    brokePr = true
+                }
+            }
+
+            if (brokePr) {
+                maxWeights[title] = newMax
+                recentPrEvents.removeIf { it.first == title }
+                recentPrEvents.add(title to newMax)
             }
         }
+
+        val list = mutableListOf<PrResponse>()
+        val addedExercises = mutableSetOf<String>()
+
+        // 1. Add Big 3 PRs
+        for ((ex, weight) in maxWeights) {
+            if (isBigThree(ex)) {
+                list.add(PrResponse(exercise = ex, weight_kg = weight.toFloat(), is_big_three = true))
+                addedExercises.add(ex)
+            }
+        }
+
+        // 2. Add the last 4 recent PRs (that aren't already added)
+        recentPrEvents.reverse() // Most recent first
+        var recentCount = 0
+        for ((ex, weight) in recentPrEvents) {
+            if (recentCount >= 4) break
+            if (!addedExercises.contains(ex)) {
+                list.add(PrResponse(exercise = ex, weight_kg = weight.toFloat()))
+                addedExercises.add(ex)
+                recentCount++
+            }
+        }
+
         return Response.success(list)
     }
 
@@ -786,7 +836,7 @@ class LocalTraymApiService : TraymApiService {
               "day": "WED",
               "title": "LEGS",
               "exercises": [
-                {"name": "Smith Machine / Barbell / DB Goblet Squat", "sets": 3, "reps": 12},
+                {"name": "Weighted Squat", "sets": 3, "reps": 12},
                 {"name": "Leg Press", "sets": 3, "reps": 15},
                 {"name": "Lying Leg Curl", "sets": 3, "reps": 15},
                 {"name": "45° Hyperextension / Back Extension", "sets": 3, "reps": 15},

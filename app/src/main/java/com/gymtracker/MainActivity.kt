@@ -74,7 +74,7 @@ fun GymTrackerApp() {
         }
     }
 
-    val startRoute = "home"
+    val startRoute = if (SessionManager.authToken != null) "home" else "login"
 
     NavHost(
         navController = navController,
@@ -82,6 +82,15 @@ fun GymTrackerApp() {
         enterTransition = { EnterTransition.None },
         exitTransition = { ExitTransition.None }
     ) {
+        composable("login") {
+            LoginScreen(
+                onLoginSuccess = {
+                    navController.navigate("home") {
+                        popUpTo("login") { inclusive = true }
+                    }
+                }
+            )
+        }
         composable("home") {
             HomeScreen(
                 currentRoute = currentRoute,
@@ -107,8 +116,8 @@ fun GymTrackerApp() {
                 onNavigate = onNavigateToBottomTab
             )
         }
-        composable("progress") {
-            ProgressScreen(
+        composable("community") {
+            CommunityScreen(
                 currentRoute = currentRoute,
                 onNavigate = onNavigateToBottomTab
             )

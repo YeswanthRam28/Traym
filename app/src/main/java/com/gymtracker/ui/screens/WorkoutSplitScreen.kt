@@ -137,6 +137,7 @@ fun WorkoutSplitScreen(
                 onToggleSet = { exIndex, setIndex -> viewModel.toggleSetCompleted(dayIndex, exIndex, setIndex) },
                 onUpdateSet = { exIndex, setIndex, weight, reps -> viewModel.updateActualSet(dayIndex, exIndex, setIndex, weight, reps) },
                 onExerciseClick = { selectedExerciseNameForHistory = it },
+                onSaveExercise = { exIndex -> viewModel.saveExercise(dayIndex, exIndex) },
                 modifier = Modifier.padding(if (selectedDayIndex != null) PaddingValues(0.dp) else paddingValues).statusBarsPadding()
             )
         }
@@ -324,6 +325,7 @@ fun DayDetailView(
     onToggleSet: (Int, Int) -> Unit,
     onUpdateSet: (Int, Int, Double, Int) -> Unit,
     onExerciseClick: (String) -> Unit,
+    onSaveExercise: (Int) -> Unit,
     modifier: Modifier = Modifier
 ) {
     Column(
@@ -396,6 +398,9 @@ fun DayDetailView(
                                 IconButton(onClick = { onMoveExercise(index, index + 1) }, enabled = index < day.exercises.size - 1) {
                                     Text("↓", color = if (index < day.exercises.size - 1) OffWhite else Muted)
                                 }
+                            }
+                            TextButton(onClick = { onSaveExercise(index) }, contentPadding = PaddingValues(horizontal = 8.dp)) {
+                                Text("SAVE", color = Acid, style = Typography.labelMedium.copy(fontWeight = FontWeight.Bold))
                             }
                             IconButton(onClick = { onRemoveExercise(index) }) {
                                 Text("✕", color = Color.Red)

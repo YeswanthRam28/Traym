@@ -24,6 +24,22 @@ object NotionSyncManager {
         return File(SessionManager.appContext.filesDir, fileName)
     }
 
+    private fun extractNotionNumber(property: JSONObject?): Double {
+        if (property == null) return 0.0
+        if (property.has("number") && !property.isNull("number")) {
+            return property.optDouble("number", 0.0)
+        }
+        val formula = property.optJSONObject("formula")
+        if (formula != null && formula.has("number") && !formula.isNull("number")) {
+            return formula.optDouble("number", 0.0)
+        }
+        val rollup = property.optJSONObject("rollup")
+        if (rollup != null && rollup.has("number") && !rollup.isNull("number")) {
+            return rollup.optDouble("number", 0.0)
+        }
+        return 0.0
+    }
+
     private fun readJsonArray(fileName: String): JSONArray {
         val file = getFile(fileName)
         if (!file.exists()) return JSONArray()
@@ -123,33 +139,78 @@ object NotionSyncManager {
                             val dateObj = properties.optJSONObject("Date")?.optJSONObject("date")
                             val startedAt = dateObj?.optString("start") ?: ""
 
-                            val volume = properties.optJSONObject("Volume")?.optDouble("number", 0.0) ?: 0.0
-                            val duration = properties.optJSONObject("Duration(min)")?.optInt("number", 0) ?: 0
-                            val reps = properties.optJSONObject("Reps")?.optInt("number", 0) ?: 0
-                            val weight = properties.optJSONObject("Weight")?.optDouble("number", 0.0) ?: 0.0
+                            val volume = extractNotionNumber(properties.optJSONObject("Volume"))
+                            val duration = extractNotionNumber(properties.optJSONObject("Duration(min)")).toInt()
+                            val reps = extractNotionNumber(properties.optJSONObject("Reps")).toInt()
+                            val weight = extractNotionNumber(properties.optJSONObject("Weight"))
                             val type = properties.optJSONObject("Type")?.optJSONObject("select")?.optString("name") ?: "Working"
 
-                            val newLocalWorkout = JSONObject().apply {
-                                put("id", pageId)
-                                put("notion_page_id", pageId)
-                                put("title", title)
-                                put("started_at", startedAt)
-                                put("completed_at", startedAt)
-                                put("total_volume_kg", volume)
-                                put("duration_seconds", duration * 60)
-                                put("total_sets", 1)
-                                put("total_reps", reps)
-                                
-                                val setsArr = JSONArray().put(JSONObject().apply {
-                                    put("set_number", 1)
+                            val activityType = properties.optJSONObject("Activity Type")?.optJSONObject("select")?.optString("name") ?: "Strength"
+                            val workoutTitle = properties.optJSONObject("Workout")?.optJSONObject("select")?.optString("name") ?: "Custom Workout"
+                            val muscle = properties.optJSONObject("Muscle")?.optJSONObject("select")?.optString("name") ?: "Full Body"
+                            val equipment = properties.optJSONObject("Equipment")?.optJSONObject("select")?.optString("name") ?: "Bodyweight"
+                            val cardioType = properties.optJSONObject("Cardio Type")?.optJSONObject("select")?.optString("name") ?: ""
+
+                            val dateKey = startedAt.take(10)
+                            var existingWorkout: JSONObject? = null
+                            for (k in 0 until localWorkouts.length()) {
+                                val w = localWorkouts.getJSONObject(k)
+                                if (w.optString("title") == title && w.optString("started_at").take(10) == dateKey) {
+                                    existingWorkout = w
+                                    break
+                                }
+                            }
+
+                            if (existingWorkout != null) {
+                                val setsArr = existingWorkout.optJSONArray("sets") ?: JSONArray()
+                                setsArr.put(JSONObject().apply {
+                                    put("set_number", setsArr.length() + 1)
                                     put("weight_kg", weight)
                                     put("reps", reps)
                                     put("rpe", 8.0)
                                     put("notion_page_id", pageId)
                                 })
-                                put("sets", setsArr)
+                                existingWorkout.put("sets", setsArr)
+                                existingWorkout.put("total_sets", existingWorkout.optInt("total_sets", 0) + 1)
+                                existingWorkout.put("total_volume_kg", existingWorkout.optDouble("total_volume_kg", 0.0) + volume)
+                                existingWorkout.put("total_reps", existingWorkout.optInt("total_reps", 0) + reps)
+                                val existingDuration = existingWorkout.optInt("duration_seconds", 0)
+                                if (duration * 60 > existingDuration) {
+                                    existingWorkout.put("duration_seconds", duration * 60)
+                                }
+                                existingWorkout.put("activity_type", activityType)
+                                existingWorkout.put("workout_title", workoutTitle)
+                                existingWorkout.put("muscle", muscle)
+                                existingWorkout.put("equipment", equipment)
+                                existingWorkout.put("cardio_type", cardioType)
+                            } else {
+                                val newLocalWorkout = JSONObject().apply {
+                                    put("id", pageId)
+                                    put("notion_page_id", pageId)
+                                    put("title", title)
+                                    put("started_at", startedAt)
+                                    put("completed_at", startedAt)
+                                    put("total_volume_kg", volume)
+                                    put("duration_seconds", duration * 60)
+                                    put("total_sets", 1)
+                                    put("total_reps", reps)
+                                    put("activity_type", activityType)
+                                    put("workout_title", workoutTitle)
+                                    put("muscle", muscle)
+                                    put("equipment", equipment)
+                                    put("cardio_type", cardioType)
+                                    
+                                    val setsArr = JSONArray().put(JSONObject().apply {
+                                        put("set_number", 1)
+                                        put("weight_kg", weight)
+                                        put("reps", reps)
+                                        put("rpe", 8.0)
+                                        put("notion_page_id", pageId)
+                                    })
+                                    put("sets", setsArr)
+                                }
+                                localWorkouts.put(newLocalWorkout)
                             }
-                            localWorkouts.put(newLocalWorkout)
                             localWorkoutNotionIds.add(pageId)
                             fetchedCount++
                         }
@@ -172,33 +233,22 @@ object NotionSyncManager {
                                 val s = sets.getJSONObject(j)
                                 val notionId = s.optString("notion_page_id")
                                 
-                                if (notionId.isEmpty() || !syncedNotionPageIds.contains(notionId)) {
+                                if (notionId.isEmpty()) {
                                     val createdPageId = pushSetToNotionSync(token, dbId, localW, s)
                                     if (createdPageId != null) {
                                         s.put("notion_page_id", createdPageId)
                                         pushedCount++
-                                    }
-                                } else {
-                                    // Update existing page
-                                    val updatedPageId = pushSetToNotionSync(token, dbId, localW, s)
-                                    if (updatedPageId != null) {
-                                        updatedCount++
                                     }
                                 }
                             }
                         } else {
                             // Cardio or legacy without sets array
                             val notionId = localW.optString("notion_page_id")
-                            if (notionId.isEmpty() || !syncedNotionPageIds.contains(notionId)) {
+                            if (notionId.isEmpty()) {
                                 val createdPageId = pushSetToNotionSync(token, dbId, localW, null)
                                 if (createdPageId != null) {
                                     localW.put("notion_page_id", createdPageId)
                                     pushedCount++
-                                }
-                            } else {
-                                val updatedPageId = pushSetToNotionSync(token, dbId, localW, null)
-                                if (updatedPageId != null) {
-                                    updatedCount++
                                 }
                             }
                         }
@@ -206,6 +256,28 @@ object NotionSyncManager {
 
                     if (pushedCount > 0 || updatedCount > 0) {
                         writeJsonArray("workouts.json", localWorkouts)
+                    }
+
+                    // Rebuild PRs from the updated localWorkouts array
+                    val prs = JSONObject()
+                    for (i in 0 until localWorkouts.length()) {
+                        val w = localWorkouts.getJSONObject(i)
+                        val title = w.optString("title")
+                        val lowerTitle = title.lowercase()
+                        if (lowerTitle.contains("bench press") || lowerTitle.contains("squat") || lowerTitle.contains("deadlift")) {
+                            val sets = w.optJSONArray("sets") ?: JSONArray()
+                            for (j in 0 until sets.length()) {
+                                val s = sets.getJSONObject(j)
+                                val weightKg = s.optDouble("weight_kg", 0.0)
+                                val currentPr = prs.optDouble(title, 0.0)
+                                if (weightKg > currentPr) {
+                                    prs.put(title, weightKg)
+                                }
+                            }
+                        }
+                    }
+                    if (prs.length() > 0) {
+                        try { getFile("prs.json").writeText(prs.toString()) } catch (e: Exception) {}
                     }
 
                     onSuccess("Sync complete. Fetched $fetchedCount from Notion. Pushed $pushedCount new items, updated $updatedCount items in Notion.")
@@ -231,7 +303,7 @@ object NotionSyncManager {
 
     private fun getDowFromDateString(dateString: String): String {
         try {
-            val format = java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", java.util.Locale.US)
+            val format = java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssXXX", java.util.Locale.US)
             val date = format.parse(dateString) ?: java.util.Date()
             val cal = java.util.Calendar.getInstance()
             cal.time = date
@@ -252,7 +324,7 @@ object NotionSyncManager {
 
     private fun pushSetToNotionSync(token: String, dbId: String, workout: JSONObject, setObj: JSONObject?): String? {
         try {
-            val notionPageId = setObj?.optString("notion_page_id") ?: workout.optString("notion_page_id")
+            val notionPageId = if (setObj != null) setObj.optString("notion_page_id", "") else workout.optString("notion_page_id", "")
             val isUpdate = notionPageId.isNotEmpty()
             
             val title = workout.optString("title", "Workout")

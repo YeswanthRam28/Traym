@@ -113,7 +113,8 @@ data class WorkoutSummaryResponse(
 
 data class PrResponse(
     val exercise: String,
-    val weight_kg: Float
+    val weight_kg: Float,
+    val is_big_three: Boolean = false
 )
 
 data class ActivePlanResponse(

@@ -19,7 +19,6 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.gymtracker.auth.SessionManager
 import com.gymtracker.network.NotionSyncManager
 import com.gymtracker.ui.components.NavBar
-import com.gymtracker.ui.components.NavItem
 import com.gymtracker.ui.theme.*
 import com.gymtracker.ui.viewmodels.ProfileViewModel
 import kotlinx.coroutines.launch
@@ -71,6 +70,7 @@ fun ProfileScreen(
     }
 
     var showNotionDialog by remember { mutableStateOf(false) }
+    var showConnectedAppsDialog by remember { mutableStateOf(false) }
 
     val settingsItems = listOf(
         "Account Details", "Training Preferences", "Connected Apps", 
@@ -102,7 +102,7 @@ fun ProfileScreen(
         },
         bottomBar = {
             NavBar(
-currentRoute = currentRoute,
+                currentRoute = currentRoute,
                 onNavigate = onNavigate
             )
         }
@@ -191,10 +191,10 @@ currentRoute = currentRoute,
                             .clickable {
                                 when (item) {
                                     "Connected Apps" -> {
-                                        showNotionDialog = true
+                                        showConnectedAppsDialog = true
                                     }
                                     "Data Export" -> {
-                                        filePickerLauncher.launch("application/json")
+                                        Toast.makeText(context, "Data Export coming soon", Toast.LENGTH_SHORT).show()
                                     }
                                     "Clear Local Data" -> {
                                         coroutineScope.launch {
@@ -359,6 +359,91 @@ currentRoute = currentRoute,
                     enabled = !isSyncing
                 ) {
                     Text("CLOSE", color = OffWhite)
+                }
+            },
+            containerColor = Dim,
+            shape = RoundedCornerShape(0.dp)
+        )
+    }
+
+    if (showConnectedAppsDialog) {
+        var isGoogleConnected by remember { mutableStateOf(SessionManager.authToken != null) }
+        
+        AlertDialog(
+            onDismissRequest = { showConnectedAppsDialog = false },
+            title = {
+                Text(
+                    text = "CONNECTED APPS",
+                    style = Typography.headlineMedium.copy(color = Acid)
+                )
+            },
+            text = {
+                Column(
+                    verticalArrangement = Arrangement.spacedBy(16.dp),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    // Google Auth Option
+                    Surface(
+                        color = if (isGoogleConnected) Acid.copy(alpha = 0.1f) else AppBlack,
+                        border = androidx.compose.foundation.BorderStroke(1.dp, if (isGoogleConnected) Acid else Muted),
+                        shape = RoundedCornerShape(8.dp),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable {
+                                if (isGoogleConnected) {
+                                    // Disconnect Google
+                                    SessionManager.authToken = null
+                                    isGoogleConnected = false
+                                    Toast.makeText(context, "Google Disconnected.", Toast.LENGTH_SHORT).show()
+                                } else {
+                                    // We will let them sign in through LoginScreen for now
+                                    Toast.makeText(context, "Please sign out and sign in from the main screen to connect Google.", Toast.LENGTH_LONG).show()
+                                }
+                            }
+                    ) {
+                        Row(
+                            modifier = Modifier.padding(16.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            Column {
+                                Text("Google Account", style = Typography.bodyLarge.copy(color = OffWhite))
+                                Text(
+                                    text = if (isGoogleConnected) "Connected" else "Not connected",
+                                    style = Typography.bodySmall.copy(color = if (isGoogleConnected) Acid else OffWhite.copy(alpha = 0.5f))
+                                )
+                            }
+                        }
+                    }
+                    
+                    // Notion Option
+                    Surface(
+                        color = AppBlack,
+                        border = androidx.compose.foundation.BorderStroke(1.dp, Muted),
+                        shape = RoundedCornerShape(8.dp),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable {
+                                showConnectedAppsDialog = false
+                                showNotionDialog = true
+                            }
+                    ) {
+                        Row(
+                            modifier = Modifier.padding(16.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            Column {
+                                Text("Notion Sync", style = Typography.bodyLarge.copy(color = OffWhite))
+                                Text("Configure database sync", style = Typography.bodySmall.copy(color = OffWhite.copy(alpha = 0.5f)))
+                            }
+                        }
+                    }
+                }
+            },
+            confirmButton = {
+                TextButton(onClick = { showConnectedAppsDialog = false }) {
+                    Text("DONE", color = Acid)
                 }
             },
             containerColor = Dim,
