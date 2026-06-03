@@ -12,29 +12,33 @@ const NOTION_PROMPT = `I need you to create a Notion database for me called "Tra
 
 This database tracks gym workouts at a per-set level. Every single row in this database represents ONE set of ONE exercise from a workout session — so a full workout with 20 sets will produce 20 rows.
 
-Please create the following properties with the EXACT names and types listed below. Do not rename, abbreviate, or add any extra properties — the Traym app syncs to this database via the Notion API and matches these property names character-for-character:
+Please create the following properties with the EXACT names and types listed below. Do not rename, abbreviate, or add any extra properties, and do NOT change the order of these columns — the Traym app syncs to this database via the Notion API and relies on this exact structure:
 
-1. Name — Title (this is the default Notion title field; it will contain the exercise name for that set, e.g. "Barbell Squat")
-2. Date — Date (the full date and time the workout was performed)
-3. Activity Type — Select, with these initial options: Strength, Cardio
-4. Workout — Text (the workout session label, e.g. "Morning Lift")
-5. Workout Type — Select (the training split tag, e.g. LEG3, PULL B BACK A, PUSH A CHEST, FULL BODY)
-6. Exercise — Text (the specific exercise name, e.g. "Barbell Squat", "Bench Press")
-7. Muscle — Select, with these initial options: Legs, Pull Body, Push Body, Full Body, Core, Shoulders, Arms
-8. Equipment — Select, with these initial options: Barbell, Dumbbell, Machine, Bodyweight, Cable, Resistance Band, Kettlebell
-9. Type — Select, with these initial options: Working, Warmup, Failure, Drop Set, Rest-Pause
-10. Weight — Number (the weight used in kilograms; use 0 for bodyweight exercises)
-11. Reps — Number (number of reps performed in this specific set)
-12. Cardio Type — Text (for cardio sessions only: e.g. Run, Cycle, Row)
-13. RPE — Number (Rate of Perceived Exertion, on a scale of 1 to 10)
-14. Duration(min) — Number (duration of the set or cardio block in minutes)
-15. Distance (km) — Number (distance covered, primarily used for cardio)
-16. Completed — Checkbox (whether this set was completed successfully)
-17. 1RM Estimation — Number (calculated one-rep max estimate based on weight and reps)
-18. Volume — Number (calculated set volume = weight × reps)
-19. DOW — Text (day of the week the workout occurred, e.g. Monday, Tuesday)
+1. Name — Title (this is the default Notion title field)
+2. Date — Date
+3. Activity Type — Select (with options: Strength, Cardio)
+4. Workout — Text
+5. Workout Type — Select (e.g., LEG3, PULL B)
+6. Exercise — Text
+7. Muscle — Select
+8. Equipment — Select
+9. Type — Select (e.g., Working, Warmup)
+10. Weight — Number
+11. Reps — Number
+12. Cardio Type — Text
+13. RPE — Number
+14. Duration(min) — Number
+15. Distance (km) — Number
+16. Completed — Checkbox
+17. 1RM Estimation — Number
+18. Volume — Number
+19. DOW — Text (Day of week)
 
-Set the database to a full-page Table view. Keep the layout clean and minimal — no linked views, no filters by default. This is the foundation of my fitness tracking system and data integrity is critical.`;
+Set the default view to a full-page Table view named "Strength". 
+
+Then, create a second view in the same database called "Cardio". This Cardio view MUST have the exact same columns in the exact same order as the Strength view.
+
+Keep the layout clean and minimal — no filters by default. This is the foundation of my fitness tracking system and data integrity is critical.`;
 
 const NOTION_STEPS = [
   {
@@ -45,25 +49,25 @@ const NOTION_STEPS = [
     detail: (
       <div className="mt-3 space-y-3">
         <div className="font-space text-[10px] text-[#555] space-y-1.5">
-          <div className="flex items-center gap-2"><span className="text-[#D6FF00]">→</span><span><span className="text-[#F2F2F2]">Name</span> — Title (default)</span></div>
-          <div className="flex items-center gap-2"><span className="text-[#D6FF00]">→</span><span><span className="text-[#F2F2F2]">Date</span> — Date type</span></div>
-          <div className="flex items-center gap-2"><span className="text-[#D6FF00]">→</span><span><span className="text-[#F2F2F2]">Activity Type</span> — Select (Strength / Cardio)</span></div>
-          <div className="flex items-center gap-2"><span className="text-[#D6FF00]">→</span><span><span className="text-[#F2F2F2]">Workout</span> — Rich text</span></div>
-          <div className="flex items-center gap-2"><span className="text-[#D6FF00]">→</span><span><span className="text-[#F2F2F2]">Workout Type</span> — Select (LEG3, PULL B…)</span></div>
-          <div className="flex items-center gap-2"><span className="text-[#D6FF00]">→</span><span><span className="text-[#F2F2F2]">Exercise</span> — Rich text</span></div>
-          <div className="flex items-center gap-2"><span className="text-[#D6FF00]">→</span><span><span className="text-[#F2F2F2]">Muscle</span> — Select (Legs, Pull Body, Full Body…)</span></div>
-          <div className="flex items-center gap-2"><span className="text-[#D6FF00]">→</span><span><span className="text-[#F2F2F2]">Equipment</span> — Select (Bodyweight, Barbell…)</span></div>
-          <div className="flex items-center gap-2"><span className="text-[#D6FF00]">→</span><span><span className="text-[#F2F2F2]">Type</span> — Select (Working, Warmup…)</span></div>
+          <div className="flex items-center gap-2"><span className="text-[#D6FF00]">→</span><span><span className="text-[#F2F2F2]">Name</span> — Title</span></div>
+          <div className="flex items-center gap-2"><span className="text-[#D6FF00]">→</span><span><span className="text-[#F2F2F2]">Date</span> — Date</span></div>
+          <div className="flex items-center gap-2"><span className="text-[#D6FF00]">→</span><span><span className="text-[#F2F2F2]">Activity Type</span> — Select</span></div>
+          <div className="flex items-center gap-2"><span className="text-[#D6FF00]">→</span><span><span className="text-[#F2F2F2]">Workout</span> — Text</span></div>
+          <div className="flex items-center gap-2"><span className="text-[#D6FF00]">→</span><span><span className="text-[#F2F2F2]">Workout Type</span> — Select</span></div>
+          <div className="flex items-center gap-2"><span className="text-[#D6FF00]">→</span><span><span className="text-[#F2F2F2]">Exercise</span> — Text</span></div>
+          <div className="flex items-center gap-2"><span className="text-[#D6FF00]">→</span><span><span className="text-[#F2F2F2]">Muscle</span> — Select</span></div>
+          <div className="flex items-center gap-2"><span className="text-[#D6FF00]">→</span><span><span className="text-[#F2F2F2]">Equipment</span> — Select</span></div>
+          <div className="flex items-center gap-2"><span className="text-[#D6FF00]">→</span><span><span className="text-[#F2F2F2]">Type</span> — Select</span></div>
           <div className="flex items-center gap-2"><span className="text-[#D6FF00]">→</span><span><span className="text-[#F2F2F2]">Weight</span> — Number</span></div>
           <div className="flex items-center gap-2"><span className="text-[#D6FF00]">→</span><span><span className="text-[#F2F2F2]">Reps</span> — Number</span></div>
-          <div className="flex items-center gap-2"><span className="text-[#D6FF00]">→</span><span><span className="text-[#F2F2F2]">Cardio Type</span> — Rich text</span></div>
+          <div className="flex items-center gap-2"><span className="text-[#D6FF00]">→</span><span><span className="text-[#F2F2F2]">Cardio Type</span> — Text</span></div>
           <div className="flex items-center gap-2"><span className="text-[#D6FF00]">→</span><span><span className="text-[#F2F2F2]">RPE</span> — Number</span></div>
           <div className="flex items-center gap-2"><span className="text-[#D6FF00]">→</span><span><span className="text-[#F2F2F2]">Duration(min)</span> — Number</span></div>
           <div className="flex items-center gap-2"><span className="text-[#D6FF00]">→</span><span><span className="text-[#F2F2F2]">Distance (km)</span> — Number</span></div>
           <div className="flex items-center gap-2"><span className="text-[#D6FF00]">→</span><span><span className="text-[#F2F2F2]">Completed</span> — Checkbox</span></div>
           <div className="flex items-center gap-2"><span className="text-[#D6FF00]">→</span><span><span className="text-[#F2F2F2]">1RM Estimation</span> — Number</span></div>
           <div className="flex items-center gap-2"><span className="text-[#D6FF00]">→</span><span><span className="text-[#F2F2F2]">Volume</span> — Number</span></div>
-          <div className="flex items-center gap-2"><span className="text-[#D6FF00]">→</span><span><span className="text-[#F2F2F2]">DOW</span> — Rich text (day of week)</span></div>
+          <div className="flex items-center gap-2"><span className="text-[#D6FF00]">→</span><span><span className="text-[#F2F2F2]">DOW</span> — Text</span></div>
         </div>
       </div>
     ),

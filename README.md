@@ -10,6 +10,7 @@ Traym allows you to manage your fitness journey with customizable workout splits
 - **Community Leaderboard**: Compete globally based on weekly volume (backed by Neon PostgreSQL).
 - **Notion Sync**: Seamlessly sync your workout history to a Notion database.
 - **Offline & Sync Capabilities**: Robust state management syncing with your local device.
+- **Web Landing Page**: A beautifully designed React + Vite landing page to distribute the app directly and guide users through setting up the Notion integration.
 
 ## 🛠️ Setup Instructions
 
@@ -34,3 +35,4 @@ Once the `.env` file is created, open the project in **Android Studio**.
 - **Vico** (Charting/Graphs)
 - **Retrofit & OkHttp** (Networking)
 - **Reorderable** (Drag-and-Drop functionality)
+- **React, Vite & Tailwind CSS** (Web Landing Page)
