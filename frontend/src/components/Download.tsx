@@ -187,7 +187,7 @@ export default function Download() {
               {/* Download CTA */}
               <div className="w-full sm:max-w-md">
                 <a
-                  href="/assets/Traym.apk"
+                  href="/Traym.apk"
                   download="Traym.apk"
                   className="group relative flex items-center justify-center space-x-3 w-full h-[60px] bg-[#D6FF00] text-[#080808] hover:bg-transparent hover:text-[#D6FF00] border-2 border-[#D6FF00] font-syne font-bold text-sm tracking-[0.15em] uppercase transition-all duration-200 select-none cursor-pointer"
                   style={{ borderRadius: '0px' }}
