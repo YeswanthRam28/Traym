@@ -1,0 +1,6 @@
+{
+  "name": "TRAYM",
+  "description": "A landing page for TRAYM - Your AI Coach & Log for lifters who mean it.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
