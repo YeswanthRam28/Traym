@@ -45,6 +45,8 @@ class ProfileViewModel : ViewModel() {
     private fun listenForNotionAuth() {
         viewModelScope.launch {
             NotionOAuthManager.authCodeFlow.collectLatest { code ->
+                if (com.gymtracker.auth.SessionManager.getNotionToken().isNotEmpty()) return@collectLatest
+                
                 _notionSetupStatus.value = "Authenticating with Notion..."
                 val result = NotionOAuthManager.exchangeCodeForToken(code)
                 result.onSuccess { (token, workspaceName) ->

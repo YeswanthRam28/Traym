@@ -21,15 +21,38 @@
         p {
             opacity: 0.7;
         }
+        .btn {
+            display: inline-block;
+            margin-top: 20px;
+            padding: 12px 24px;
+            background-color: #d6ff00;
+            color: #0d0d0d;
+            text-decoration: none;
+            font-weight: bold;
+            border-radius: 8px;
+            opacity: 0;
+            transition: opacity 0.5s ease-in;
+        }
     </style>
 </head>
 <body>
     <h1>Logging you into Traym...</h1>
     <p>Please wait while we redirect you back to the app.</p>
+    <a href="#" id="manual-btn" class="btn">Tap here if nothing happens</a>
     <script>
-        // Redirect back to the mobile app using the custom scheme, preserving the query parameters (like ?code=...)
+        const customSchemeUrl = "traym://notion-auth" + window.location.search;
+        
+        // Update the fallback link just in case
+        document.getElementById("manual-btn").href = customSchemeUrl;
+
+        // Redirect back to the mobile app using the custom scheme
         setTimeout(() => {
-            window.location.href = "traym://notion-auth" + window.location.search;
+            window.location.href = customSchemeUrl;
+            
+            // If it fails to redirect (e.g. blocked by Chrome), show the manual button after 2 seconds
+            setTimeout(() => {
+                document.getElementById("manual-btn").style.opacity = "1";
+            }, 2000);
         }, 100);
     </script>
 </body>

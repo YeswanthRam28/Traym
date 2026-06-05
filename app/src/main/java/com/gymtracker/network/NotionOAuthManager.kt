@@ -15,7 +15,7 @@ import java.net.URL
 
 object NotionOAuthManager {
 
-    private val _authCodeFlow = MutableSharedFlow<String>(extraBufferCapacity = 1)
+    private val _authCodeFlow = MutableSharedFlow<String>(replay = 1, onBufferOverflow = kotlinx.coroutines.channels.BufferOverflow.DROP_OLDEST)
     val authCodeFlow = _authCodeFlow.asSharedFlow()
 
     fun handleAuthCode(code: String) {
