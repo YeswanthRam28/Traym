@@ -13,10 +13,13 @@ import kotlinx.coroutines.withContext
 import org.json.JSONObject
 
 data class ActualSet(
-    val weight: Double = 0.0,
-    val reps: Int = 0,
+    val weightInput: String = "",
+    val repsInput: String = "",
     val isCompleted: Boolean = false
-)
+) {
+    val weight: Double get() = weightInput.toDoubleOrNull() ?: 0.0
+    val reps: Int get() = repsInput.toIntOrNull() ?: 0
+}
 
 data class PlannedExercise(
     val name: String,
@@ -169,7 +172,7 @@ class WorkoutSplitViewModel : ViewModel() {
         savePlan()
     }
 
-    fun updateActualSet(dayIndex: Int, exerciseIndex: Int, setIndex: Int, weight: Double, reps: Int) {
+    fun updateActualSet(dayIndex: Int, exerciseIndex: Int, setIndex: Int, weightInput: String, repsInput: String) {
         val currentDays = _uiState.value.days.toMutableList()
         val day = currentDays[dayIndex]
         val exercises = day.exercises.toMutableList()
@@ -177,7 +180,7 @@ class WorkoutSplitViewModel : ViewModel() {
         
         val actualSets = ex.actualSets.toMutableList()
         val currentSet = actualSets[setIndex]
-        actualSets[setIndex] = currentSet.copy(weight = weight, reps = reps)
+        actualSets[setIndex] = currentSet.copy(weightInput = weightInput, repsInput = repsInput)
         
         exercises[exerciseIndex] = ex.copy(actualSets = actualSets)
         
@@ -341,15 +344,15 @@ class WorkoutSplitViewModel : ViewModel() {
                                 for (k in 0 until actArr.length()) {
                                     val aObj = actArr.getJSONObject(k)
                                     actualSetsList.add(ActualSet(
-                                        weight = aObj.optDouble("weight", 0.0),
-                                        reps = aObj.optInt("reps", 0),
+                                        weightInput = aObj.optDouble("weight", 0.0).let { if (it > 0) it.toString().removeSuffix(".0") else "" },
+                                        repsInput = aObj.optInt("reps", 0).let { if (it > 0) it.toString() else "" },
                                         isCompleted = aObj.optBoolean("isCompleted", false)
                                     ))
                                 }
                             } else {
                                 // Default initialize based on sets
                                 for (k in 0 until sets) {
-                                    actualSetsList.add(ActualSet(weight = 0.0, reps = 0, isCompleted = false))
+                                    actualSetsList.add(ActualSet())
                                 }
                             }
                             

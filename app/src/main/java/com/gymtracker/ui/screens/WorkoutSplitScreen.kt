@@ -135,7 +135,7 @@ fun WorkoutSplitScreen(
                 onUpdateExercise = { exIndex, ex -> viewModel.updateExercise(dayIndex, exIndex, ex) },
                 onMoveExercise = { from, to -> viewModel.moveExercise(dayIndex, from, to) },
                 onToggleSet = { exIndex, setIndex -> viewModel.toggleSetCompleted(dayIndex, exIndex, setIndex) },
-                onUpdateSet = { exIndex, setIndex, weight, reps -> viewModel.updateActualSet(dayIndex, exIndex, setIndex, weight, reps) },
+                onUpdateSet = { exIndex, setIndex, weightInput, repsInput -> viewModel.updateActualSet(dayIndex, exIndex, setIndex, weightInput, repsInput) },
                 onExerciseClick = { selectedExerciseNameForHistory = it },
                 onSaveExercise = { exIndex -> viewModel.saveExercise(dayIndex, exIndex) },
                 modifier = Modifier.padding(if (selectedDayIndex != null) PaddingValues(0.dp) else paddingValues).statusBarsPadding()
@@ -323,7 +323,7 @@ fun DayDetailView(
     onUpdateExercise: (Int, PlannedExercise) -> Unit,
     onMoveExercise: (Int, Int) -> Unit,
     onToggleSet: (Int, Int) -> Unit,
-    onUpdateSet: (Int, Int, Double, Int) -> Unit,
+    onUpdateSet: (Int, Int, String, String) -> Unit,
     onExerciseClick: (String) -> Unit,
     onSaveExercise: (Int) -> Unit,
     modifier: Modifier = Modifier
@@ -455,10 +455,9 @@ fun DayDetailView(
                                 Text("${setIdx + 1}", modifier = Modifier.width(32.dp), style = Typography.bodyMedium.copy(color = OffWhite))
                                 
                                 TextField(
-                                    value = if (actualSet.weight > 0) actualSet.weight.toString() else "",
-                                    onValueChange = { 
-                                        val w = it.toDoubleOrNull() ?: 0.0
-                                        onUpdateSet(index, setIdx, w, actualSet.reps)
+                                    value = actualSet.weightInput,
+                                    onValueChange = { wInput -> 
+                                        onUpdateSet(index, setIdx, wInput, actualSet.repsInput)
                                     },
                                     modifier = Modifier.weight(1f).padding(end = 8.dp),
                                     colors = TextFieldDefaults.colors(
@@ -474,10 +473,9 @@ fun DayDetailView(
                                 )
                                 
                                 TextField(
-                                    value = if (actualSet.reps > 0) actualSet.reps.toString() else "",
-                                    onValueChange = { 
-                                        val r = it.toIntOrNull() ?: 0
-                                        onUpdateSet(index, setIdx, actualSet.weight, r)
+                                    value = actualSet.repsInput,
+                                    onValueChange = { rInput -> 
+                                        onUpdateSet(index, setIdx, actualSet.weightInput, rInput)
                                     },
                                     modifier = Modifier.weight(1f).padding(start = 8.dp),
                                     colors = TextFieldDefaults.colors(
