@@ -420,13 +420,9 @@ object NotionSyncManager {
     fun createDatabase(token: String, onResult: (Boolean, String) -> Unit) {
         kotlinx.coroutines.CoroutineScope(kotlinx.coroutines.Dispatchers.IO).launch {
             try {
-                // 1. Search for a page shared with the integration
+                // 1. Search for a page OR database shared with the integration
                 val searchBody = JSONObject().apply {
                     put("query", "")
-                    put("filter", JSONObject().apply {
-                        put("value", "page")
-                        put("property", "object")
-                    })
                 }
                 
                 val searchReq = okhttp3.Request.Builder()
@@ -445,7 +441,14 @@ object NotionSyncManager {
                             val json = JSONObject(body)
                             val results = json.optJSONArray("results")
                             if (results != null && results.length() > 0) {
-                                pageId = results.getJSONObject(0).getString("id")
+                                val firstResult = results.getJSONObject(0)
+                                if (firstResult.optString("object") == "database") {
+                                    kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.Main) {
+                                        onResult(true, firstResult.getString("id"))
+                                    }
+                                    return@launch
+                                }
+                                pageId = firstResult.getString("id")
                             }
                         }
                     }

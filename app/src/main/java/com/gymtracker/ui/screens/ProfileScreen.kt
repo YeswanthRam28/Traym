@@ -229,6 +229,9 @@ fun ProfileScreen(
         var syncStatus by remember { mutableStateOf("") }
         var isSyncing by remember { mutableStateOf(false) }
         var isConnected by remember { mutableStateOf(SessionManager.getNotionToken().isNotEmpty()) }
+        var showAdvanced by remember { mutableStateOf(false) }
+        var advancedToken by remember { mutableStateOf(SessionManager.getNotionToken()) }
+        var advancedDbId by remember { mutableStateOf(SessionManager.getNotionDatabaseId()) }
         val notionSetupStatus by viewModel.notionSetupStatus.collectAsState()
 
         LaunchedEffect(notionSetupStatus) {
@@ -285,6 +288,47 @@ fun ProfileScreen(
                                 Text("Disconnect", color = Color.Red.copy(alpha = 0.8f))
                             }
                         }
+                    } else if (showAdvanced) {
+                        TextField(
+                            value = advancedToken,
+                            onValueChange = { advancedToken = it },
+                            label = { Text("Integration Token") },
+                            colors = TextFieldDefaults.colors(
+                                focusedContainerColor = Color.Transparent,
+                                unfocusedContainerColor = Color.Transparent,
+                                focusedTextColor = OffWhite,
+                                unfocusedTextColor = OffWhite,
+                                cursorColor = Acid
+                            ),
+                            textStyle = Typography.bodySmall,
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                        TextField(
+                            value = advancedDbId,
+                            onValueChange = { advancedDbId = it },
+                            label = { Text("Database ID") },
+                            colors = TextFieldDefaults.colors(
+                                focusedContainerColor = Color.Transparent,
+                                unfocusedContainerColor = Color.Transparent,
+                                focusedTextColor = OffWhite,
+                                unfocusedTextColor = OffWhite,
+                                cursorColor = Acid
+                            ),
+                            textStyle = Typography.bodySmall,
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                        Button(
+                            onClick = {
+                                SessionManager.saveNotionConfig(advancedToken, advancedDbId, autoSyncEnabled)
+                                isConnected = advancedToken.isNotEmpty()
+                                showAdvanced = false
+                            },
+                            colors = ButtonDefaults.buttonColors(containerColor = Dim, contentColor = Acid),
+                            shape = RoundedCornerShape(0.dp),
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Text("SAVE MANUALLY", style = Typography.labelLarge)
+                        }
                     } else {
                         Button(
                             onClick = {
@@ -301,6 +345,12 @@ fun ProfileScreen(
                             modifier = Modifier.fillMaxWidth()
                         ) {
                             Text("CONNECT WITH NOTION", style = Typography.labelLarge)
+                        }
+                        TextButton(
+                            onClick = { showAdvanced = true },
+                            modifier = Modifier.align(Alignment.CenterHorizontally)
+                        ) {
+                            Text("Advanced Setup", color = OffWhite.copy(alpha = 0.5f), fontSize = 12.sp)
                         }
                     }
                     
