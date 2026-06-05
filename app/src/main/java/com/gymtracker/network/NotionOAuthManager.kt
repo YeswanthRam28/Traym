@@ -59,12 +59,6 @@ object NotionOAuthManager {
                 val accessToken = json.optString("access_token")
                 val workspaceName = json.optString("workspace_name")
                 
-                SessionManager.saveNotionConfig(
-                    token = accessToken,
-                    databaseId = "", // We will set this after creating the DB
-                    enabled = true
-                )
-                
                 Result.success(Pair(accessToken, workspaceName))
             } else {
                 val errorResponse = conn.errorStream?.bufferedReader()?.use { it.readText() } ?: "Unknown error"

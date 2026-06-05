@@ -228,7 +228,14 @@ fun ProfileScreen(
         var autoSyncEnabled by remember { mutableStateOf(SessionManager.isNotionSyncEnabled()) }
         var syncStatus by remember { mutableStateOf("") }
         var isSyncing by remember { mutableStateOf(false) }
+        var isConnected by remember { mutableStateOf(SessionManager.getNotionToken().isNotEmpty()) }
         val notionSetupStatus by viewModel.notionSetupStatus.collectAsState()
+
+        LaunchedEffect(notionSetupStatus) {
+            if (notionSetupStatus == null) {
+                isConnected = SessionManager.getNotionToken().isNotEmpty()
+            }
+        }
 
         AlertDialog(
             onDismissRequest = { if (!isSyncing && notionSetupStatus == null) showNotionDialog = false },
@@ -261,12 +268,22 @@ fun ProfileScreen(
                                 style = Typography.bodySmall.copy(color = Acid)
                             )
                         }
-                    } else if (SessionManager.getNotionToken().isNotEmpty()) {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
+                    } else if (isConnected) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
                             Text(
                                 text = "✓ Connected to Notion",
                                 style = Typography.bodyMedium.copy(color = Acid)
                             )
+                            TextButton(onClick = {
+                                SessionManager.saveNotionConfig("", "", false)
+                                isConnected = false
+                            }) {
+                                Text("Disconnect", color = Color.Red.copy(alpha = 0.8f))
+                            }
                         }
                     } else {
                         Button(
@@ -274,8 +291,10 @@ fun ProfileScreen(
                                 val clientId = com.gymtracker.BuildConfig.NOTION_CLIENT_ID
                                 val redirectUri = java.net.URLEncoder.encode(com.gymtracker.BuildConfig.NOTION_REDIRECT_URI, "UTF-8")
                                 val url = "https://api.notion.com/v1/oauth/authorize?client_id=$clientId&response_type=code&owner=user&redirect_uri=$redirectUri"
-                                val intent = android.content.Intent(android.content.Intent.ACTION_VIEW, android.net.Uri.parse(url))
-                                context.startActivity(intent)
+                                val customTabsIntent = androidx.browser.customtabs.CustomTabsIntent.Builder()
+                                    .setShowTitle(true)
+                                    .build()
+                                customTabsIntent.launchUrl(context, android.net.Uri.parse(url))
                             },
                             colors = ButtonDefaults.buttonColors(containerColor = Acid, contentColor = AppBlack),
                             shape = RoundedCornerShape(0.dp),
@@ -341,13 +360,15 @@ fun ProfileScreen(
                                 }
                             )
                         },
-                        enabled = !isSyncing && SessionManager.getNotionToken().isNotBlank() && SessionManager.getNotionDatabaseId().isNotBlank()
+                        enabled = !isSyncing && isConnected
                     ) {
                         Text("SYNC NOW", color = Acid)
                     }
                     Button(
                         onClick = {
-                            SessionManager.saveNotionConfig(SessionManager.getNotionToken(), SessionManager.getNotionDatabaseId(), autoSyncEnabled)
+                            if (isConnected) {
+                                SessionManager.saveNotionConfig(SessionManager.getNotionToken(), SessionManager.getNotionDatabaseId(), autoSyncEnabled)
+                            }
                             showNotionDialog = false
                         },
                         colors = ButtonDefaults.buttonColors(containerColor = Acid, contentColor = AppBlack),

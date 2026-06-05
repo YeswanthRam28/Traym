@@ -8,105 +8,33 @@ import { Wifi, Battery, Cpu, Lock, Download as DownloadIcon, Database, Key, Link
 import MaskHeading from './MaskHeading';
 import ScrollReveal from './ScrollReveal';
 
-const NOTION_PROMPT = `I need you to create a Notion database for me called "Traym Fitness Log".
-
-This database tracks gym workouts at a per-set level. Every single row in this database represents ONE set of ONE exercise from a workout session — so a full workout with 20 sets will produce 20 rows.
-
-Please create the following properties with the EXACT names and types listed below. Do not rename, abbreviate, or add any extra properties, and do NOT change the order of these columns — the Traym app syncs to this database via the Notion API and relies on this exact structure:
-
-1. Name — Title (this is the default Notion title field)
-2. Date — Date
-3. Activity Type — Select (with options: Strength, Cardio)
-4. Workout — Text
-5. Workout Type — Select (e.g., LEG3, PULL B)
-6. Exercise — Text
-7. Muscle — Select
-8. Equipment — Select
-9. Type — Select (e.g., Working, Warmup)
-10. Weight — Number
-11. Reps — Number
-12. Cardio Type — Text
-13. RPE — Number
-14. Duration(min) — Number
-15. Distance (km) — Number
-16. Completed — Checkbox
-17. 1RM Estimation — Number
-18. Volume — Number
-19. DOW — Text (Day of week)
-
-Set the default view to a full-page Table view named "Strength". 
-
-Then, create a second view in the same database called "Cardio". This Cardio view MUST have the exact same columns in the exact same order as the Strength view.
-
-Keep the layout clean and minimal — no filters by default. This is the foundation of my fitness tracking system and data integrity is critical.`;
-
 const NOTION_STEPS = [
   {
     num: '01',
     icon: Database,
-    title: 'Create Your Notion Database',
-    desc: 'In Notion, create a new full-page database (Table view). Name it "Traym Fitness Log". Add these exact columns — or paste the prompt below into Notion AI / ChatGPT to create it automatically:',
-    detail: (
-      <div className="mt-3 space-y-3">
-        <div className="font-space text-[10px] text-[#555] space-y-1.5">
-          <div className="flex items-center gap-2"><span className="text-[#D6FF00]">→</span><span><span className="text-[#F2F2F2]">Name</span> — Title</span></div>
-          <div className="flex items-center gap-2"><span className="text-[#D6FF00]">→</span><span><span className="text-[#F2F2F2]">Date</span> — Date</span></div>
-          <div className="flex items-center gap-2"><span className="text-[#D6FF00]">→</span><span><span className="text-[#F2F2F2]">Activity Type</span> — Select</span></div>
-          <div className="flex items-center gap-2"><span className="text-[#D6FF00]">→</span><span><span className="text-[#F2F2F2]">Workout</span> — Text</span></div>
-          <div className="flex items-center gap-2"><span className="text-[#D6FF00]">→</span><span><span className="text-[#F2F2F2]">Workout Type</span> — Select</span></div>
-          <div className="flex items-center gap-2"><span className="text-[#D6FF00]">→</span><span><span className="text-[#F2F2F2]">Exercise</span> — Text</span></div>
-          <div className="flex items-center gap-2"><span className="text-[#D6FF00]">→</span><span><span className="text-[#F2F2F2]">Muscle</span> — Select</span></div>
-          <div className="flex items-center gap-2"><span className="text-[#D6FF00]">→</span><span><span className="text-[#F2F2F2]">Equipment</span> — Select</span></div>
-          <div className="flex items-center gap-2"><span className="text-[#D6FF00]">→</span><span><span className="text-[#F2F2F2]">Type</span> — Select</span></div>
-          <div className="flex items-center gap-2"><span className="text-[#D6FF00]">→</span><span><span className="text-[#F2F2F2]">Weight</span> — Number</span></div>
-          <div className="flex items-center gap-2"><span className="text-[#D6FF00]">→</span><span><span className="text-[#F2F2F2]">Reps</span> — Number</span></div>
-          <div className="flex items-center gap-2"><span className="text-[#D6FF00]">→</span><span><span className="text-[#F2F2F2]">Cardio Type</span> — Text</span></div>
-          <div className="flex items-center gap-2"><span className="text-[#D6FF00]">→</span><span><span className="text-[#F2F2F2]">RPE</span> — Number</span></div>
-          <div className="flex items-center gap-2"><span className="text-[#D6FF00]">→</span><span><span className="text-[#F2F2F2]">Duration(min)</span> — Number</span></div>
-          <div className="flex items-center gap-2"><span className="text-[#D6FF00]">→</span><span><span className="text-[#F2F2F2]">Distance (km)</span> — Number</span></div>
-          <div className="flex items-center gap-2"><span className="text-[#D6FF00]">→</span><span><span className="text-[#F2F2F2]">Completed</span> — Checkbox</span></div>
-          <div className="flex items-center gap-2"><span className="text-[#D6FF00]">→</span><span><span className="text-[#F2F2F2]">1RM Estimation</span> — Number</span></div>
-          <div className="flex items-center gap-2"><span className="text-[#D6FF00]">→</span><span><span className="text-[#F2F2F2]">Volume</span> — Number</span></div>
-          <div className="flex items-center gap-2"><span className="text-[#D6FF00]">→</span><span><span className="text-[#F2F2F2]">DOW</span> — Text</span></div>
-        </div>
-      </div>
-    ),
+    title: 'Create a Notion Page',
+    desc: 'Open Notion and create a brand new, empty page. Name it "Traym Fitness Log" (or anything you like).',
+    detail: null,
   },
   {
     num: '02',
-    icon: Key,
-    title: 'Create a Notion Integration',
-    desc: 'Go to notion.so/my-integrations → click "+ New integration". Name it "Traym". Select your workspace. Under Capabilities, enable: Read content, Update content, Insert content. Hit Save.',
-    detail: (
-      <div className="mt-3 font-space text-[10px] text-[#555]">
-        Copy the <span className="text-[#D6FF00]">Internal Integration Secret</span> — this is your API token.
-      </div>
-    ),
+    icon: Smartphone,
+    title: 'Connect in Traym',
+    desc: 'Open the Traym app on your phone. Go to Profile → Connect with Notion.',
+    detail: null,
   },
   {
     num: '03',
-    icon: Link2,
-    title: 'Connect Database to Integration',
-    desc: 'Open your Traym database page in Notion. Click the "···" (three-dot menu) in the top-right → "Add connections" → select the "Traym" integration you just created.',
+    icon: Key,
+    title: 'Grant Access',
+    desc: 'When the Notion authorization page opens, sign in and select ONLY the new "Traym Fitness Log" page you just created. Hit "Allow Access".',
     detail: null,
   },
   {
     num: '04',
-    icon: Database,
-    title: 'Get Your Database ID',
-    desc: 'Open your database in a browser. Look at the URL — it looks like:',
-    detail: (
-      <div className="mt-3 bg-[#0d0d0d] border border-[#2A2A2A] px-3 py-2 font-space text-[10px] text-[#666] break-all">
-        notion.so/<span className="text-[#D6FF00]">your-workspace</span>/<span className="text-[#F2F2F2] font-bold">xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx</span>?v=...
-        <div className="mt-1.5 text-[#555]">The 32-character string before "?v=" is your Database ID.</div>
-      </div>
-    ),
-  },
-  {
-    num: '05',
-    icon: Smartphone,
-    title: 'Configure in Traym App',
-    desc: 'Open the Traym app → go to Profile → tap "Connected Apps" → select "Notion Sync". Paste your Integration Token and Database ID. Toggle Auto-Sync to ON. Hit Save.',
+    icon: CheckCircle2,
+    title: 'Auto-Magic Setup',
+    desc: 'The app will automatically build the entire database with the exact columns and schema it needs inside that page. You don\'t have to build any columns yourself!',
     detail: (
       <div className="mt-3 flex items-center gap-2 font-space text-[10px] text-[#D6FF00]">
         <CheckCircle2 className="w-3.5 h-3.5 flex-shrink-0" />
@@ -118,22 +46,6 @@ const NOTION_STEPS = [
 
 export default function Download() {
   const [activeTab, setActiveTab] = useState<'apk' | 'notion'>('apk');
-  const [copied, setCopied] = useState(false);
-
-  const handleCopyPrompt = async () => {
-    try {
-      await navigator.clipboard.writeText(NOTION_PROMPT);
-    } catch {
-      const el = document.createElement('textarea');
-      el.value = NOTION_PROMPT;
-      document.body.appendChild(el);
-      el.select();
-      document.execCommand('copy');
-      document.body.removeChild(el);
-    }
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2500);
-  };
 
   return (
     <section id="download" className="bg-[#111111] py-24 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
@@ -271,7 +183,7 @@ export default function Download() {
         {activeTab === 'notion' && (
           <div className="max-w-3xl">
             <p className="font-dm text-sm text-[#666666] leading-relaxed mb-10 max-w-xl">
-              Traym can automatically sync every workout to a Notion database, giving you a beautiful, queryable log of your entire training history. Follow these 5 steps to get set up.
+              Traym can automatically sync every workout to a Notion database, giving you a beautiful, queryable log of your entire training history. It takes 15 seconds to set up.
             </p>
 
             <div className="space-y-0">
@@ -298,36 +210,11 @@ export default function Download() {
                       <p className="font-dm text-xs text-[#666] leading-relaxed">{step.desc}</p>
                       {step.detail}
 
-                      {/* Copy Prompt Button — only on Step 01 */}
-                      {idx === 0 && (
-                        <button
-                          onClick={handleCopyPrompt}
-                          className={`mt-4 flex items-center gap-2.5 px-4 py-2.5 border font-space text-[10px] tracking-[0.2em] uppercase transition-all duration-300 ${
-                            copied
-                              ? 'border-[#D6FF00] text-[#D6FF00] bg-[#D6FF00]/10'
-                              : 'border-[#2A2A2A] text-[#555] hover:border-[#D6FF00] hover:text-[#D6FF00]'
-                          }`}
-                          style={{ borderRadius: '0px' }}
-                        >
-                          {copied ? (
-                            <>
-                              <ClipboardCheck className="w-3.5 h-3.5" />
-                              Copied to clipboard!
-                            </>
-                          ) : (
-                            <>
-                              <Copy className="w-3.5 h-3.5" />
-                              Copy AI Prompt to Create DB
-                            </>
-                          )}
-                        </button>
-                      )}
                     </div>
                   </div>
                 );
               })}
             </div>
-
             {/* CTA to switch to APK tab */}
             <div className="mt-12 border-t border-[#2A2A2A] pt-8">
               <p className="font-space text-[11px] text-[#555] mb-4 tracking-wider">READY TO GO? GET THE APP FIRST.</p>

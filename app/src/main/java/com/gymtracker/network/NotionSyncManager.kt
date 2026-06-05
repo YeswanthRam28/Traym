@@ -436,21 +436,26 @@ object NotionSyncManager {
                     .addHeader("Notion-Version", "2022-06-28")
                     .build()
                     
+                // 1. Search for a page shared with the integration (with retries due to indexing delay)
                 var pageId: String? = null
-                client.newCall(searchReq).execute().use { response ->
-                    if (response.isSuccessful) {
-                        val bodyStr = response.body?.string() ?: ""
-                        val resJson = JSONObject(bodyStr)
-                        val results = resJson.optJSONArray("results")
-                        if (results != null && results.length() > 0) {
-                            pageId = results.getJSONObject(0).getString("id")
+                for (i in 0..2) {
+                    client.newCall(searchReq).execute().use { response ->
+                        if (response.isSuccessful) {
+                            val body = response.body?.string() ?: ""
+                            val json = JSONObject(body)
+                            val results = json.optJSONArray("results")
+                            if (results != null && results.length() > 0) {
+                                pageId = results.getJSONObject(0).getString("id")
+                            }
                         }
                     }
+                    if (pageId != null) break
+                    kotlinx.coroutines.delay(2000) // Wait 2 seconds before retrying
                 }
                 
                 if (pageId == null) {
                     kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.Main) {
-                        onResult(false, "No page found. Please make sure you selected a page during Notion login.")
+                        onResult(false, "No page found. Please ensure you ticked a page during login.")
                     }
                     return@launch
                 }
@@ -472,22 +477,22 @@ object NotionSyncManager {
                     props.put("Name", JSONObject().apply { put("title", JSONObject()) })
                     props.put("Date", JSONObject().apply { put("date", JSONObject()) })
                     props.put("Activity Type", JSONObject().apply { put("select", JSONObject()) })
-                    props.put("Workout", JSONObject().apply { put("rich_text", JSONObject()) })
+                    props.put("Workout", JSONObject().apply { put("select", JSONObject()) })
                     props.put("Workout Type", JSONObject().apply { put("select", JSONObject()) })
-                    props.put("Exercise", JSONObject().apply { put("rich_text", JSONObject()) })
+                    props.put("Exercise", JSONObject().apply { put("select", JSONObject()) })
                     props.put("Muscle", JSONObject().apply { put("select", JSONObject()) })
                     props.put("Equipment", JSONObject().apply { put("select", JSONObject()) })
                     props.put("Type", JSONObject().apply { put("select", JSONObject()) })
                     props.put("Weight", JSONObject().apply { put("number", JSONObject().apply { put("format", "number") }) })
                     props.put("Reps", JSONObject().apply { put("number", JSONObject().apply { put("format", "number") }) })
-                    props.put("Cardio Type", JSONObject().apply { put("rich_text", JSONObject()) })
+                    props.put("Cardio Type", JSONObject().apply { put("select", JSONObject()) })
                     props.put("RPE", JSONObject().apply { put("number", JSONObject().apply { put("format", "number") }) })
                     props.put("Duration(min)", JSONObject().apply { put("number", JSONObject().apply { put("format", "number") }) })
                     props.put("Distance (km)", JSONObject().apply { put("number", JSONObject().apply { put("format", "number") }) })
                     props.put("Completed", JSONObject().apply { put("checkbox", JSONObject()) })
                     props.put("1RM Estimation", JSONObject().apply { put("number", JSONObject().apply { put("format", "number") }) })
                     props.put("Volume", JSONObject().apply { put("number", JSONObject().apply { put("format", "number") }) })
-                    props.put("DOW", JSONObject().apply { put("rich_text", JSONObject()) })
+                    props.put("DOW", JSONObject().apply { put("select", JSONObject()) })
                     
                     put("properties", props)
                 }
