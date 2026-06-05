@@ -32,6 +32,9 @@ android {
         buildConfigField("String", "RAPID_API_KEY", "\"${envProps.getProperty("RAPID_API_KEY", "")}\"")
         buildConfigField("String", "CLERK_PUBLISHABLE_KEY", "\"${envProps.getProperty("CLERK_PUBLISHABLE_KEY", "")}\"")
         buildConfigField("String", "NEON_DATABASE_URL", "\"${envProps.getProperty("NEON_DATABASE_URL", "")}\"")
+        buildConfigField("String", "NOTION_CLIENT_ID", "\"${envProps.getProperty("NOTION_CLIENT_ID", "")}\"")
+        buildConfigField("String", "NOTION_CLIENT_SECRET", "\"${envProps.getProperty("NOTION_CLIENT_SECRET", "")}\"")
+        buildConfigField("String", "NOTION_REDIRECT_URI", "\"${envProps.getProperty("NOTION_REDIRECT_URI", "")}\"")
     }
 
     buildTypes {

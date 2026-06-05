@@ -416,4 +416,110 @@ object NotionSyncManager {
         }
         return null
     }
+
+    fun createDatabase(token: String, onResult: (Boolean, String) -> Unit) {
+        kotlinx.coroutines.CoroutineScope(kotlinx.coroutines.Dispatchers.IO).launch {
+            try {
+                // 1. Search for a page shared with the integration
+                val searchBody = JSONObject().apply {
+                    put("query", "")
+                    put("filter", JSONObject().apply {
+                        put("value", "page")
+                        put("property", "object")
+                    })
+                }
+                
+                val searchReq = okhttp3.Request.Builder()
+                    .url("https://api.notion.com/v1/search")
+                    .post(okhttp3.RequestBody.create(mediaType, searchBody.toString()))
+                    .addHeader("Authorization", "Bearer $token")
+                    .addHeader("Notion-Version", "2022-06-28")
+                    .build()
+                    
+                var pageId: String? = null
+                client.newCall(searchReq).execute().use { response ->
+                    if (response.isSuccessful) {
+                        val bodyStr = response.body?.string() ?: ""
+                        val resJson = JSONObject(bodyStr)
+                        val results = resJson.optJSONArray("results")
+                        if (results != null && results.length() > 0) {
+                            pageId = results.getJSONObject(0).getString("id")
+                        }
+                    }
+                }
+                
+                if (pageId == null) {
+                    kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.Main) {
+                        onResult(false, "No page found. Please make sure you selected a page during Notion login.")
+                    }
+                    return@launch
+                }
+                
+                // 2. Create the Database
+                val dbBody = JSONObject().apply {
+                    put("parent", JSONObject().apply {
+                        put("type", "page_id")
+                        put("page_id", pageId)
+                    })
+                    put("title", JSONArray().apply {
+                        put(JSONObject().apply {
+                            put("type", "text")
+                            put("text", JSONObject().apply { put("content", "Traym Fitness Log") })
+                        })
+                    })
+                    
+                    val props = JSONObject()
+                    props.put("Name", JSONObject().apply { put("title", JSONObject()) })
+                    props.put("Date", JSONObject().apply { put("date", JSONObject()) })
+                    props.put("Activity Type", JSONObject().apply { put("select", JSONObject()) })
+                    props.put("Workout", JSONObject().apply { put("rich_text", JSONObject()) })
+                    props.put("Workout Type", JSONObject().apply { put("select", JSONObject()) })
+                    props.put("Exercise", JSONObject().apply { put("rich_text", JSONObject()) })
+                    props.put("Muscle", JSONObject().apply { put("select", JSONObject()) })
+                    props.put("Equipment", JSONObject().apply { put("select", JSONObject()) })
+                    props.put("Type", JSONObject().apply { put("select", JSONObject()) })
+                    props.put("Weight", JSONObject().apply { put("number", JSONObject().apply { put("format", "number") }) })
+                    props.put("Reps", JSONObject().apply { put("number", JSONObject().apply { put("format", "number") }) })
+                    props.put("Cardio Type", JSONObject().apply { put("rich_text", JSONObject()) })
+                    props.put("RPE", JSONObject().apply { put("number", JSONObject().apply { put("format", "number") }) })
+                    props.put("Duration(min)", JSONObject().apply { put("number", JSONObject().apply { put("format", "number") }) })
+                    props.put("Distance (km)", JSONObject().apply { put("number", JSONObject().apply { put("format", "number") }) })
+                    props.put("Completed", JSONObject().apply { put("checkbox", JSONObject()) })
+                    props.put("1RM Estimation", JSONObject().apply { put("number", JSONObject().apply { put("format", "number") }) })
+                    props.put("Volume", JSONObject().apply { put("number", JSONObject().apply { put("format", "number") }) })
+                    props.put("DOW", JSONObject().apply { put("rich_text", JSONObject()) })
+                    
+                    put("properties", props)
+                }
+
+                val createReq = okhttp3.Request.Builder()
+                    .url("https://api.notion.com/v1/databases")
+                    .post(okhttp3.RequestBody.create(mediaType, dbBody.toString()))
+                    .addHeader("Authorization", "Bearer $token")
+                    .addHeader("Notion-Version", "2022-06-28")
+                    .build()
+                    
+                client.newCall(createReq).execute().use { response ->
+                    val bodyStr = response.body?.string() ?: ""
+                    if (response.isSuccessful) {
+                        val dbJson = JSONObject(bodyStr)
+                        val dbId = dbJson.getString("id")
+                        com.gymtracker.auth.SessionManager.saveNotionConfig(token, dbId, true)
+                        kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.Main) {
+                            onResult(true, "Database created successfully")
+                        }
+                    } else {
+                        kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.Main) {
+                            onResult(false, "API Error: ${response.code} $bodyStr")
+                        }
+                    }
+                }
+                
+            } catch (e: Exception) {
+                kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.Main) {
+                    onResult(false, e.message ?: "Unknown error")
+                }
+            }
+        }
+    }
 }

@@ -23,7 +23,9 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.gymtracker.ui.theme.AIGymTrackerTheme
 import com.gymtracker.ui.theme.AppBlack
 import com.gymtracker.auth.SessionManager
+import com.gymtracker.network.NotionOAuthManager
 import com.gymtracker.ui.screens.*
+import android.content.Intent
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -31,6 +33,8 @@ class MainActivity : ComponentActivity() {
         
         SessionManager.init(this)
         SessionManager.authToken?.let { com.gymtracker.network.ApiClient.setAuthToken(it) }
+        
+        handleIntent(intent)
         
         // Draw edge-to-edge
         WindowCompat.setDecorFitsSystemWindows(window, false)
@@ -42,6 +46,25 @@ class MainActivity : ComponentActivity() {
                     color = AppBlack
                 ) {
                     GymTrackerApp()
+                }
+            }
+        }
+    }
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        handleIntent(intent)
+    }
+
+    private fun handleIntent(intent: Intent?) {
+        val action = intent?.action
+        val data = intent?.data
+
+        if (Intent.ACTION_VIEW == action && data != null) {
+            if (data.scheme == "traym" && data.host == "notion-auth") {
+                val code = data.getQueryParameter("code")
+                if (code != null) {
+                    NotionOAuthManager.handleAuthCode(code)
                 }
             }
         }

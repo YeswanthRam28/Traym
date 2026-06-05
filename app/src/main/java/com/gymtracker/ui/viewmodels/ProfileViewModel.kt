@@ -11,6 +11,9 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.flow.collectLatest
+import com.gymtracker.network.NotionOAuthManager
+import com.gymtracker.network.NotionSyncManager
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.MultipartBody
 import okhttp3.RequestBody.Companion.asRequestBody
@@ -31,8 +34,36 @@ class ProfileViewModel : ViewModel() {
     private val _successMessage = MutableStateFlow<String?>(null)
     val successMessage: StateFlow<String?> = _successMessage.asStateFlow()
 
+    private val _notionSetupStatus = MutableStateFlow<String?>(null)
+    val notionSetupStatus: StateFlow<String?> = _notionSetupStatus.asStateFlow()
+
     init {
         fetchProfile()
+        listenForNotionAuth()
+    }
+
+    private fun listenForNotionAuth() {
+        viewModelScope.launch {
+            NotionOAuthManager.authCodeFlow.collectLatest { code ->
+                _notionSetupStatus.value = "Authenticating with Notion..."
+                val result = NotionOAuthManager.exchangeCodeForToken(code)
+                result.onSuccess { (token, workspaceName) ->
+                    _notionSetupStatus.value = "Creating database in $workspaceName..."
+                    NotionSyncManager.createDatabase(token) { success, msg ->
+                        if (success) {
+                            _notionSetupStatus.value = null
+                            _successMessage.value = "Successfully connected to Notion!"
+                        } else {
+                            _notionSetupStatus.value = null
+                            _errorMessage.value = "Failed to create Notion database: $msg"
+                        }
+                    }
+                }.onFailure { e ->
+                    _notionSetupStatus.value = null
+                    _errorMessage.value = "Notion Auth Failed: ${e.message}"
+                }
+            }
+        }
     }
 
     fun fetchProfile() {

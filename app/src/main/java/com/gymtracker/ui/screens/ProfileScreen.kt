@@ -225,13 +225,13 @@ fun ProfileScreen(
 
     if (showNotionDialog) {
         var token by remember { mutableStateOf(SessionManager.getNotionToken()) }
-        var databaseId by remember { mutableStateOf(SessionManager.getNotionDatabaseId()) }
         var autoSyncEnabled by remember { mutableStateOf(SessionManager.isNotionSyncEnabled()) }
         var syncStatus by remember { mutableStateOf("") }
         var isSyncing by remember { mutableStateOf(false) }
+        val notionSetupStatus by viewModel.notionSetupStatus.collectAsState()
 
         AlertDialog(
-            onDismissRequest = { if (!isSyncing) showNotionDialog = false },
+            onDismissRequest = { if (!isSyncing && notionSetupStatus == null) showNotionDialog = false },
             title = {
                 Text(
                     text = "NOTION SYNC CONFIG",
@@ -244,43 +244,48 @@ fun ProfileScreen(
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     Text(
-                        text = "Enter your Notion details to automatically back up and fetch workouts.",
+                        text = "1-Click setup to automatically back up and fetch your workouts.",
                         style = Typography.bodyMedium.copy(color = OffWhite.copy(alpha = 0.7f))
                     )
                     
-                    OutlinedTextField(
-                        value = token,
-                        onValueChange = { token = it },
-                        label = { Text("Integration Token") },
-                        modifier = Modifier.fillMaxWidth(),
-                        singleLine = true,
-                        colors = OutlinedTextFieldDefaults.colors(
-                            focusedBorderColor = Acid,
-                            unfocusedBorderColor = Muted,
-                            cursorColor = Acid,
-                            focusedLabelColor = Acid,
-                            unfocusedLabelColor = OffWhite.copy(alpha = 0.5f),
-                            focusedTextColor = OffWhite,
-                            unfocusedTextColor = OffWhite
-                        )
-                    )
+                    if (notionSetupStatus != null) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            androidx.compose.material3.CircularProgressIndicator(
+                                modifier = Modifier.size(16.dp),
+                                color = Acid,
+                                strokeWidth = 2.dp
+                            )
+                            Spacer(modifier = Modifier.width(12.dp))
+                            Text(
+                                text = notionSetupStatus ?: "",
+                                style = Typography.bodySmall.copy(color = Acid)
+                            )
+                        }
+                    } else if (SessionManager.getNotionToken().isNotEmpty()) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Text(
+                                text = "✓ Connected to Notion",
+                                style = Typography.bodyMedium.copy(color = Acid)
+                            )
+                        }
+                    } else {
+                        Button(
+                            onClick = {
+                                val clientId = com.gymtracker.BuildConfig.NOTION_CLIENT_ID
+                                val redirectUri = java.net.URLEncoder.encode(com.gymtracker.BuildConfig.NOTION_REDIRECT_URI, "UTF-8")
+                                val url = "https://api.notion.com/v1/oauth/authorize?client_id=$clientId&response_type=code&owner=user&redirect_uri=$redirectUri"
+                                val intent = android.content.Intent(android.content.Intent.ACTION_VIEW, android.net.Uri.parse(url))
+                                context.startActivity(intent)
+                            },
+                            colors = ButtonDefaults.buttonColors(containerColor = Acid, contentColor = AppBlack),
+                            shape = RoundedCornerShape(0.dp),
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Text("CONNECT WITH NOTION", style = Typography.labelLarge)
+                        }
+                    }
                     
-                    OutlinedTextField(
-                        value = databaseId,
-                        onValueChange = { databaseId = it },
-                        label = { Text("Database ID") },
-                        modifier = Modifier.fillMaxWidth(),
-                        singleLine = true,
-                        colors = OutlinedTextFieldDefaults.colors(
-                            focusedBorderColor = Acid,
-                            unfocusedBorderColor = Muted,
-                            cursorColor = Acid,
-                            focusedLabelColor = Acid,
-                            unfocusedLabelColor = OffWhite.copy(alpha = 0.5f),
-                            focusedTextColor = OffWhite,
-                            unfocusedTextColor = OffWhite
-                        )
-                    )
+
                     
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
@@ -319,7 +324,7 @@ fun ProfileScreen(
                         onClick = {
                             isSyncing = true
                             syncStatus = "Synchronizing database..."
-                            SessionManager.saveNotionConfig(token, databaseId, autoSyncEnabled)
+                            SessionManager.saveNotionConfig(SessionManager.getNotionToken(), SessionManager.getNotionDatabaseId(), autoSyncEnabled)
                             NotionSyncManager.syncWithNotion(
                                 onSuccess = { msg ->
                                     coroutineScope.launch {
@@ -336,13 +341,13 @@ fun ProfileScreen(
                                 }
                             )
                         },
-                        enabled = !isSyncing && token.isNotBlank() && databaseId.isNotBlank()
+                        enabled = !isSyncing && SessionManager.getNotionToken().isNotBlank() && SessionManager.getNotionDatabaseId().isNotBlank()
                     ) {
                         Text("SYNC NOW", color = Acid)
                     }
                     Button(
                         onClick = {
-                            SessionManager.saveNotionConfig(token, databaseId, autoSyncEnabled)
+                            SessionManager.saveNotionConfig(SessionManager.getNotionToken(), SessionManager.getNotionDatabaseId(), autoSyncEnabled)
                             showNotionDialog = false
                         },
                         colors = ButtonDefaults.buttonColors(containerColor = Acid, contentColor = AppBlack),
