@@ -25,6 +25,8 @@ import com.gymtracker.ui.theme.AppBlack
 import com.gymtracker.auth.SessionManager
 import com.gymtracker.network.NotionOAuthManager
 import com.gymtracker.ui.screens.*
+import com.gymtracker.ui.viewmodels.ProgressViewModel
+import com.gymtracker.ui.viewmodels.WorkoutSplitViewModel
 import android.content.Intent
 
 class MainActivity : ComponentActivity() {
@@ -77,6 +79,8 @@ fun GymTrackerApp() {
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route ?: "home"
     
+    val splitViewModel: WorkoutSplitViewModel = viewModel()
+    
     // Manage status bar icon color based on current screen
     val view = androidx.compose.ui.platform.LocalView.current
     if (!view.isInEditMode) {
@@ -94,6 +98,16 @@ fun GymTrackerApp() {
             }
             launchSingleTop = true
             restoreState = true
+        }
+    }
+
+    val onSmartNavigate: (String) -> Unit = { route ->
+        if (route.startsWith("statDetail") || route.startsWith("explore?dayIndex")) {
+            navController.navigate(route)
+        } else if (route == "pop") {
+            navController.popBackStack()
+        } else {
+            onNavigateToBottomTab(route)
         }
     }
 
@@ -117,13 +131,14 @@ fun GymTrackerApp() {
         composable("home") {
             HomeScreen(
                 currentRoute = currentRoute,
-                onNavigate = onNavigateToBottomTab
+                onNavigate = onSmartNavigate
             )
         }
         composable("workout") {
             WorkoutSplitScreen(
                 currentRoute = currentRoute,
-                onNavigate = onNavigateToBottomTab
+                onNavigate = onSmartNavigate,
+                viewModel = splitViewModel
             )
         }
         composable("summary") {
@@ -136,25 +151,37 @@ fun GymTrackerApp() {
         composable("chat") {
             AiChatScreen(
                 currentRoute = currentRoute,
-                onNavigate = onNavigateToBottomTab
+                onNavigate = onSmartNavigate
             )
         }
         composable("community") {
             CommunityScreen(
                 currentRoute = currentRoute,
-                onNavigate = onNavigateToBottomTab
+                onNavigate = onSmartNavigate
+            )
+        }
+        composable("statDetail/{type}") { backStackEntry ->
+            val type = backStackEntry.arguments?.getString("type") ?: "muscles"
+            StatDetailScreen(
+                type = type,
+                onBack = { navController.popBackStack() },
+                viewModel = viewModel()
             )
         }
         composable("profile") {
             ProfileScreen(
                 currentRoute = currentRoute,
-                onNavigate = onNavigateToBottomTab
+                onNavigate = onSmartNavigate
             )
         }
-        composable("explore") {
+        composable("explore?dayIndex={dayIndex}") { backStackEntry ->
+            val dayIndexStr = backStackEntry.arguments?.getString("dayIndex")
+            val dayIndex = dayIndexStr?.toIntOrNull()
             ExploreScreen(
                 currentRoute = currentRoute,
-                onNavigate = onNavigateToBottomTab
+                onNavigate = onSmartNavigate,
+                selectionDayIndex = dayIndex,
+                splitViewModel = splitViewModel
             )
         }
     }

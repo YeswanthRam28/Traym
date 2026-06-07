@@ -12,6 +12,7 @@ import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
+import androidx.activity.compose.BackHandler
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
@@ -27,12 +28,15 @@ import com.gymtracker.data.Exercise
 import com.gymtracker.data.ExerciseRepository
 import com.gymtracker.ui.components.NavBar
 import com.gymtracker.ui.theme.*
+import com.gymtracker.ui.viewmodels.WorkoutSplitViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ExploreScreen(
     currentRoute: String,
-    onNavigate: (String) -> Unit
+    onNavigate: (String) -> Unit,
+    selectionDayIndex: Int? = null,
+    splitViewModel: WorkoutSplitViewModel? = null
 ) {
     var selectedTab by remember { mutableIntStateOf(0) }
     val tabs = listOf("Body Parts", "Targets", "Equipment", "Search")
@@ -41,6 +45,15 @@ fun ExploreScreen(
     var selectedCategoryType by remember { mutableStateOf<String?>(null) } // "bodyPart", "target", "equipment"
     var selectedCategoryValue by remember { mutableStateOf<String?>(null) }
     var selectedExercise by remember { mutableStateOf<Exercise?>(null) }
+
+    BackHandler(enabled = selectedExercise != null || selectedCategoryValue != null) {
+        if (selectedExercise != null) {
+            selectedExercise = null
+        } else if (selectedCategoryValue != null) {
+            selectedCategoryValue = null
+            selectedCategoryType = null
+        }
+    }
 
     Scaffold(
         bottomBar = {
@@ -66,17 +79,33 @@ fun ExploreScreen(
                         else -> emptyList()
                     },
                     onBack = { selectedCategoryValue = null },
-                    onExerciseClick = { selectedExercise = it }
+                    onExerciseClick = { exercise ->
+                        if (selectionDayIndex != null && splitViewModel != null) {
+                            splitViewModel.addExerciseFromApi(selectionDayIndex, exercise.name)
+                            onNavigate("pop")
+                        } else {
+                            selectedExercise = exercise
+                        }
+                    }
                 )
             } else {
                 Column(modifier = Modifier.fillMaxSize()) {
-                    Text(
-                        text = "Explore Exercises",
-                        color = Color.White,
-                        fontSize = 28.sp,
-                        fontWeight = FontWeight.Bold,
-                        modifier = Modifier.padding(horizontal = 24.dp, vertical = 20.dp)
-                    )
+                    Row(
+                        modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp, vertical = 20.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        if (selectionDayIndex != null) {
+                            IconButton(onClick = { onNavigate("pop") }, modifier = Modifier.padding(end = 8.dp)) {
+                                Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back", tint = Color.White)
+                            }
+                        }
+                        Text(
+                            text = if (selectionDayIndex != null) "Select Exercise" else "Explore Exercises",
+                            color = Color.White,
+                            fontSize = 28.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
                     
                     ScrollableTabRow(
                         selectedTabIndex = selectedTab,
@@ -109,7 +138,14 @@ fun ExploreScreen(
                             selectedCategoryType = "equipment"
                             selectedCategoryValue = it 
                         }
-                        3 -> SearchView(onExerciseClick = { selectedExercise = it })
+                        3 -> SearchView(onExerciseClick = { exercise -> 
+                            if (selectionDayIndex != null && splitViewModel != null) {
+                                splitViewModel.addExerciseFromApi(selectionDayIndex, exercise.name)
+                                onNavigate("pop")
+                            } else {
+                                selectedExercise = exercise
+                            }
+                        })
                     }
                 }
             }

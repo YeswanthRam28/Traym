@@ -152,6 +152,20 @@ class WorkoutSplitViewModel : ViewModel() {
             _uiState.value = _uiState.value.copy(days = currentDays)
         }
     }
+
+    fun addExerciseFromApi(dayIndex: Int, exerciseName: String) {
+        val currentDays = _uiState.value.days.toMutableList()
+        if (dayIndex in currentDays.indices) {
+            val currentExercises = currentDays[dayIndex].exercises.toMutableList()
+            val defaultSets = mutableListOf<ActualSet>()
+            for (i in 0 until 3) defaultSets.add(ActualSet())
+            
+            currentExercises.add(PlannedExercise(exerciseName, 3, 10, 0.0, defaultSets))
+            currentDays[dayIndex] = currentDays[dayIndex].copy(exercises = currentExercises)
+            _uiState.value = _uiState.value.copy(days = currentDays)
+            savePlan()
+        }
+    }
     
     fun toggleSetCompleted(dayIndex: Int, exerciseIndex: Int, setIndex: Int) {
         val currentDays = _uiState.value.days.toMutableList()

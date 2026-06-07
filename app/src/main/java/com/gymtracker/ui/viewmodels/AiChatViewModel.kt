@@ -7,7 +7,6 @@ import com.gymtracker.auth.SessionManager
 import com.gymtracker.network.ApiClient
 import com.gymtracker.network.UpdatePlanRequest
 import com.gymtracker.network.NotionSyncManager
-import com.gymtracker.ui.screens.ChatMessage
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -25,6 +24,7 @@ import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Locale
 import java.util.UUID
+data class ChatMessage(val text: String, val isUser: Boolean)
 
 class AiChatViewModel : ViewModel() {
     
@@ -138,6 +138,9 @@ class AiChatViewModel : ViewModel() {
 
             You have access to tools that can directly modify the user's plan, update their profile settings, or run a Notion sync. If the user asks you to modify their training days, exercises, or sets/reps, or update their details, or backup/sync, use the appropriate tool.
             
+            IMPORTANT EXERCISE NAMING RULE:
+            When adding exercises to a plan, you MUST use the exact official API name. ALWAYS use the `search_exercises` tool first to find the exact official API name before calling `update_plan`. NEVER invent or guess exercise names.
+
             Here is the current state of the user's progress, training plan, and history:
             
             ${getUserContext()}
@@ -295,6 +298,21 @@ class AiChatViewModel : ViewModel() {
                     })
                 })
             })
+            // search_exercises
+            put(JSONObject().apply {
+                put("type", "function")
+                put("function", JSONObject().apply {
+                    put("name", "search_exercises")
+                    put("description", "Searches the local exercise database for exact, standard exercise names. Always use this tool to find the exact name before adding a new exercise to the user's plan.")
+                    put("parameters", JSONObject().apply {
+                        put("type", "object")
+                        put("properties", JSONObject().apply {
+                            put("query", JSONObject().apply { put("type", "string") })
+                        })
+                        put("required", JSONArray().apply { put("query") })
+                    })
+                })
+            })
         }
 
         val jsonBody = JSONObject().apply {
@@ -373,6 +391,15 @@ class AiChatViewModel : ViewModel() {
         return try {
             val args = JSONObject(argumentsStr)
             when (name) {
+                "search_exercises" -> {
+                    val query = args.getString("query")
+                    val results = com.gymtracker.data.ExerciseRepository.searchByName(query).take(10)
+                    if (results.isEmpty()) {
+                        "No exercises found matching '$query'."
+                    } else {
+                        "Found exercises: " + results.joinToString(", ") { it.name }
+                    }
+                }
                 "update_plan" -> {
                     val planJson = args.getString("plan_json")
                     val response = ApiClient.apiService.updateActivePlan(com.gymtracker.network.UpdatePlanRequest(planJson))

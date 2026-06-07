@@ -196,7 +196,7 @@ export default function Hero({ onDownloadClick }: HeroProps) {
           }}
         >
           <span className="font-space text-xs tracking-[0.35em] text-[#D6FF00] bg-[#D6FF00]/10 px-3.5 py-1.5 border border-[#D6FF00]/10 uppercase">
-            REPS_CORE DEV_SYS ACTIVE
+            REPS_CORE V3 DEV_SYS ACTIVE
           </span>
         </div>
 
@@ -222,7 +222,7 @@ export default function Hero({ onDownloadClick }: HeroProps) {
           }}
         >
           <p className="font-dm font-medium text-lg sm:text-2xl text-[#F2F2F2] tracking-wide">
-            Your AI Coach & Log. Built for obsessive lifters.
+            Traym V3. Your AI Coach & Log. Built for obsessive lifters.
           </p>
           <p className="font-dm text-sm sm:text-base text-[#666666] leading-relaxed max-w-lg mx-auto">
             Track every rep. Know every why. Decipher muscular fatigue. A highly private community engine for the dedicated few.

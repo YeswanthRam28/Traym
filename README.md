@@ -1,11 +1,12 @@
-# Traym 🏋️‍♂️
+# Traym V3 🏋️‍♂️
 
 A modern, dynamic, and intuitive workout tracker built with Kotlin and Jetpack Compose. 
-Traym allows you to manage your fitness journey with customizable workout splits, beautiful UI/UX, and AI-driven features.
+Traym V3 allows you to manage your fitness journey with customizable workout splits, beautiful UI/UX, dynamic glowing heatmaps, and AI-driven features.
 
 ## 🚀 Features
+- **Dynamic Body Heatmaps**: Visualizes your daily volume directly onto a sleek anatomical glowing overlay.
 - **Dynamic Workout Splits**: Completely customizable drag-and-drop daily routines.
-- **AI Chat Coach**: Built-in AI powered by OpenRouter for fitness advice.
+- **AI Chat Coach**: Built-in AI powered by OpenRouter for fitness advice, fully integrated with standardized database exercises.
 - **Rich Exercise Database**: Backed by RapidAPI for comprehensive exercise instructions.
 - **Community Leaderboard**: Compete globally based on weekly volume (backed by Neon PostgreSQL).
 - **Notion Sync**: Seamlessly sync your workout history to a Notion database.

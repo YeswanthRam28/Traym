@@ -15,6 +15,8 @@ local.properties
 # System files
 .DS_Store
 Thumbs.db
+scratch/
+*.log
 
 # Python files
 __pycache__/

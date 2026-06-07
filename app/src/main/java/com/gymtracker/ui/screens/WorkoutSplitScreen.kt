@@ -10,6 +10,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
+import androidx.activity.compose.BackHandler
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
@@ -43,6 +44,10 @@ fun WorkoutSplitScreen(
     val history by viewModel.history.collectAsState()
     var selectedDayIndex by remember { mutableStateOf<Int?>(null) }
     var selectedExerciseNameForHistory by remember { mutableStateOf<String?>(null) }
+    
+    BackHandler(enabled = selectedDayIndex != null) {
+        selectedDayIndex = null
+    }
 
     LaunchedEffect(currentRoute) {
         if (currentRoute == "workout") {
@@ -130,7 +135,7 @@ fun WorkoutSplitScreen(
             DayDetailView(
                 day = uiState.days[dayIndex],
                 onBack = { selectedDayIndex = null },
-                onAddExercise = { viewModel.addExercise(dayIndex) },
+                onAddExercise = { onNavigate("explore?dayIndex=$dayIndex") },
                 onRemoveExercise = { viewModel.removeExercise(dayIndex, it) },
                 onUpdateExercise = { exIndex, ex -> viewModel.updateExercise(dayIndex, exIndex, ex) },
                 onMoveExercise = { from, to -> viewModel.moveExercise(dayIndex, from, to) },
@@ -361,49 +366,41 @@ fun DayDetailView(
                 Text(text = "REST DAY", style = Typography.displaySmall.copy(color = OffWhite.copy(alpha = 0.2f)))
             }
         } else {
+            val state = rememberReorderableLazyListState(onMove = { from, to ->
+                onMoveExercise(from.index, to.index)
+            })
+
             LazyColumn(
-                modifier = Modifier.weight(1f),
+                state = state.listState,
+                modifier = Modifier.weight(1f).reorderable(state),
                 verticalArrangement = Arrangement.spacedBy(24.dp),
                 contentPadding = PaddingValues(bottom = 80.dp)
             ) {
-                itemsIndexed(day.exercises) { index, exercise ->
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .background(Dim)
-                            .padding(16.dp)
-                    ) {
-                        // Exercise Header
+                itemsIndexed(day.exercises, key = { index, ex -> ex.hashCode() + index }) { index, exercise ->
+                    ReorderableItem(state, key = exercise.hashCode() + index) { isDragging ->
+                        Column(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .background(Dim)
+                                .padding(16.dp)
+                        ) {
+                            // Exercise Header
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Column(modifier = Modifier.weight(1f)) {
-                                TextField(
-                                    value = exercise.name,
-                                    onValueChange = { onUpdateExercise(index, exercise.copy(name = it)) },
-                                    modifier = Modifier.fillMaxWidth(),
-                                    colors = TextFieldDefaults.colors(
-                                        focusedContainerColor = Color.Transparent,
-                                        unfocusedContainerColor = Color.Transparent,
-                                        focusedTextColor = Acid,
-                                        unfocusedTextColor = Acid,
-                                        focusedIndicatorColor = Color.Transparent,
-                                        unfocusedIndicatorColor = Color.Transparent
-                                    ),
-                                    textStyle = Typography.titleMedium.copy(fontWeight = FontWeight.Bold)
+                                Text(
+                                    text = exercise.name,
+                                    style = Typography.titleMedium.copy(fontWeight = FontWeight.Bold, color = Acid),
+                                    modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp)
                                 )
-                            }
-                            Column {
-                                IconButton(onClick = { onMoveExercise(index, index - 1) }, enabled = index > 0) {
-                                    Text("↑", color = if (index > 0) OffWhite else Muted)
-                                }
-                                IconButton(onClick = { onMoveExercise(index, index + 1) }, enabled = index < day.exercises.size - 1) {
-                                    Text("↓", color = if (index < day.exercises.size - 1) OffWhite else Muted)
-                                }
                             }
                             TextButton(onClick = { onSaveExercise(index) }, contentPadding = PaddingValues(horizontal = 8.dp)) {
                                 Text("SAVE", color = Acid, style = Typography.labelMedium.copy(fontWeight = FontWeight.Bold))
                             }
                             IconButton(onClick = { onRemoveExercise(index) }) {
                                 Text("✕", color = Color.Red)
+                            }
+                            Box(modifier = Modifier.detectReorderAfterLongPress(state).padding(8.dp)) {
+                                Text("☰", style = Typography.headlineMedium.copy(color = Muted))
                             }
                         }
 
@@ -530,6 +527,7 @@ fun DayDetailView(
                                     Text("- REMOVE SET", style = Typography.labelSmall.copy(color = Color.Red.copy(alpha = 0.8f)))
                                 }
                             }
+                        }
                         }
                     }
                 }

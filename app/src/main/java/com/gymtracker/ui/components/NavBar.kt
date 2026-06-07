@@ -25,7 +25,7 @@ val MainNavItems = listOf(
     NavItem("HOME", R.drawable.ic_nav_home, "home"),
     NavItem("EXPLORE", R.drawable.ic_nav_explore, "explore"),
     NavItem("WORKOUT", R.drawable.ic_nav_workout, "workout"),
-    NavItem("COACH", R.drawable.ic_nav_coach, "chat"),
+    NavItem("PROGRESS", R.drawable.ic_nav_coach, "chat"),
     NavItem("COMMUNITY", R.drawable.ic_nav_community, "community")
 )
 
