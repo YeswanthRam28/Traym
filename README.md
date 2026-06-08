@@ -6,10 +6,10 @@ Traym V3 allows you to manage your fitness journey with customizable workout spl
 ## 🚀 Features
 - **Dynamic Body Heatmaps**: Visualizes your daily volume directly onto a sleek anatomical glowing overlay.
 - **Dynamic Workout Splits**: Completely customizable drag-and-drop daily routines.
-- **Advanced Set Types**: Easily toggle sets between Normal, Warm-up, Drop Sets, and Super Sets directly from the logging UI.
-- **AI Chat Coach**: Built-in AI powered by OpenRouter that can provide advice, dynamically modify your active training plan, and parse smart search aliases (e.g. searching "RDL" finds "Romanian Deadlift").
-- **Rich Exercise Database**: Extensive local database providing detailed mechanics, targets, and exercise matching.
+- **AI Chat Coach**: Built-in AI powered by OpenRouter for fitness advice, fully integrated with standardized database exercises.
+- **Rich Exercise Database**: Backed by RapidAPI for comprehensive exercise instructions.
 - **Community Leaderboard**: Compete globally based on weekly volume (backed by Neon PostgreSQL).
+- **Advanced Set Types**: Instantly toggle sets as Drop Sets, Super Sets, or Warm-ups for precise tracking.
 - **Notion Sync**: Seamlessly sync your workout history to a Notion database.
 - **Offline & Sync Capabilities**: Robust state management syncing with your local device.
 - **Web Landing Page**: A beautifully designed React + Vite landing page to distribute the app directly and guide users through setting up the Notion integration.

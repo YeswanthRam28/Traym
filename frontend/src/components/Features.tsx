@@ -46,18 +46,18 @@ const CARDS: CardData[] = [
     tag: 'INNER_CIRCLE_NET',
   },
   {
-    id: 'sets',
-    title: 'Advanced Set Types',
-    icon: Layers,
-    desc: 'Seamlessly toggle sets between Normal, Warm-up, Drop Sets, and Super Sets with a single tap. Precision tracking for advanced programming.',
-    tag: 'SET_MODIFIER_v2',
+    id: 'notion',
+    title: 'Notion Sync',
+    icon: Database,
+    desc: 'Automatically push and sync all your verified workout logs into your personal Notion databases in real time. Absolute data sovereignty.',
+    tag: 'BACKUP_PROTOCOL',
   },
   {
-    id: 'notion',
-    title: 'Notion Sync Integration',
-    icon: Database,
-    desc: 'Instantly sync your workout logs to your personal Notion database. Full architectural backup of your training history.',
-    tag: 'NOTION_API_LINK',
+    id: 'sets',
+    title: 'Advanced Sets',
+    icon: Layers,
+    desc: 'Instantly toggle sets into Drop Sets, Super Sets, or Warm-ups. The AI engine reads these context tags to accurately measure progressive overload.',
+    tag: 'TACTICAL_SETS',
   },
 ];
 
