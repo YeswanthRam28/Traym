@@ -151,6 +151,40 @@ class ProfileViewModel : ViewModel() {
         }
     }
 
+    fun updateProfileDetails(name: String, weight: String, height: String) {
+        viewModelScope.launch {
+            _isLoading.value = true
+            try {
+                // Update local session
+                com.gymtracker.auth.SessionManager.updateUserDetails(name, weight, height)
+                
+                // Sync with local mock backend via API
+                ApiClient.apiService.syncUser(
+                    com.gymtracker.network.SyncUserRequest(
+                        name = name,
+                        email = null
+                    )
+                )
+
+                // Push new name to Leaderboard PostgreSQL DB
+                kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
+                    try {
+                        com.gymtracker.network.CommunityRepository().fetchLeaderboard()
+                    } catch (e: Exception) {
+                        e.printStackTrace()
+                    }
+                }
+                
+                // Refresh UI state
+                fetchProfile()
+            } catch (e: Exception) {
+                _errorMessage.value = "Failed to update profile: ${e.message}"
+            } finally {
+                _isLoading.value = false
+            }
+        }
+    }
+
     fun uploadExportFile(context: Context, uri: Uri) {
         viewModelScope.launch {
             _isLoading.value = true

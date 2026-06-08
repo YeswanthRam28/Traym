@@ -15,7 +15,9 @@ import org.json.JSONObject
 data class ActualSet(
     val weightInput: String = "",
     val repsInput: String = "",
-    val isCompleted: Boolean = false
+    val isCompleted: Boolean = false,
+    val setType: String = "Normal",
+    val id: String = java.util.UUID.randomUUID().toString()
 ) {
     val weight: Double get() = weightInput.toDoubleOrNull() ?: 0.0
     val reps: Int get() = repsInput.toIntOrNull() ?: 0
@@ -26,14 +28,16 @@ data class PlannedExercise(
     val sets: Int,
     val reps: Int,
     val pr: Double = 0.0,
-    val actualSets: List<ActualSet> = emptyList()
+    val actualSets: List<ActualSet> = emptyList(),
+    val id: String = java.util.UUID.randomUUID().toString()
 )
 
 data class WorkoutDay(
     val dayName: String,
     val splitTitle: String,
     val exercises: List<PlannedExercise> = emptyList(),
-    val lastLoggedDate: String? = null
+    val lastLoggedDate: String? = null,
+    val id: String = java.util.UUID.randomUUID().toString()
 )
 
 data class WorkoutSplitUiState(
@@ -112,6 +116,29 @@ class WorkoutSplitViewModel : ViewModel() {
                 currentExercises[exerciseIndex] = updatedExercise
                 currentDays[dayIndex] = currentDays[dayIndex].copy(exercises = currentExercises)
                 _uiState.value = _uiState.value.copy(days = currentDays)
+            }
+        }
+    }
+
+    fun cycleSetType(dayIndex: Int, exerciseIndex: Int, setIndex: Int) {
+        val currentDays = _uiState.value.days.toMutableList()
+        if (dayIndex in currentDays.indices) {
+            val currentExercises = currentDays[dayIndex].exercises.toMutableList()
+            if (exerciseIndex in currentExercises.indices) {
+                val currentSets = currentExercises[exerciseIndex].actualSets.toMutableList()
+                if (setIndex in currentSets.indices) {
+                    val currentType = currentSets[setIndex].setType
+                    val newType = when (currentType) {
+                        "Normal" -> "Drop Set"
+                        "Drop Set" -> "Super Set"
+                        "Super Set" -> "Warm-up"
+                        else -> "Normal"
+                    }
+                    currentSets[setIndex] = currentSets[setIndex].copy(setType = newType)
+                    currentExercises[exerciseIndex] = currentExercises[exerciseIndex].copy(actualSets = currentSets)
+                    currentDays[dayIndex] = currentDays[dayIndex].copy(exercises = currentExercises)
+                    _uiState.value = _uiState.value.copy(days = currentDays)
+                }
             }
         }
     }
@@ -237,6 +264,13 @@ class WorkoutSplitViewModel : ViewModel() {
                 // Immediately sync with Notion to capture the batch sets flawlessly
                 withContext(Dispatchers.IO) {
                     com.gymtracker.network.NotionSyncManager.syncWithNotion({}, {})
+                    
+                    // Also silently push the latest volume to the Leaderboard
+                    try {
+                        com.gymtracker.network.CommunityRepository().fetchLeaderboard()
+                    } catch (e: Exception) {
+                        e.printStackTrace()
+                    }
                 }
             } catch (e: Exception) {
                 e.printStackTrace()
@@ -272,6 +306,7 @@ class WorkoutSplitViewModel : ViewModel() {
                             aObj.put("weight", a.weight)
                             aObj.put("reps", a.reps)
                             aObj.put("isCompleted", a.isCompleted)
+                            aObj.put("setType", a.setType)
                             actArr.put(aObj)
                         }
                         exObj.put("actualSets", actArr)
@@ -354,13 +389,14 @@ class WorkoutSplitViewModel : ViewModel() {
                             val actualSetsList = mutableListOf<ActualSet>()
                             val actArr = exObj.optJSONArray("actualSets")
                             
-                            if (isToday && actArr != null && actArr.length() > 0) {
+                            if (actArr != null && actArr.length() > 0) {
                                 for (k in 0 until actArr.length()) {
                                     val aObj = actArr.getJSONObject(k)
                                     actualSetsList.add(ActualSet(
                                         weightInput = aObj.optDouble("weight", 0.0).let { if (it > 0) it.toString().removeSuffix(".0") else "" },
                                         repsInput = aObj.optInt("reps", 0).let { if (it > 0) it.toString() else "" },
-                                        isCompleted = aObj.optBoolean("isCompleted", false)
+                                        isCompleted = if (isToday) aObj.optBoolean("isCompleted", false) else false,
+                                        setType = aObj.optString("setType", "Normal")
                                     ))
                                 }
                             } else {

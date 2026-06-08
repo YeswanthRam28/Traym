@@ -13,6 +13,8 @@ object SessionManager {
     private const val KEY_USER_NAME = "user_name"
     private const val KEY_USER_ID = "user_id"
     private const val KEY_PROFILE_PIC_URL = "profile_pic_url"
+    private const val KEY_USER_WEIGHT = "user_weight"
+    private const val KEY_USER_HEIGHT = "user_height"
 
     private const val KEY_NOTION_TOKEN = "notion_token"
     private const val KEY_NOTION_DATABASE_ID = "notion_database_id"
@@ -118,6 +120,41 @@ object SessionManager {
             prefs.getString(KEY_USER_NAME, "Athlete") ?: "Athlete"
         } else {
             "Athlete"
+        }
+    }
+
+    fun getUserWeight(): String = if (::prefs.isInitialized) prefs.getString(KEY_USER_WEIGHT, "") ?: "" else ""
+    fun getUserHeight(): String = if (::prefs.isInitialized) prefs.getString(KEY_USER_HEIGHT, "") ?: "" else ""
+
+    fun updateUserDetails(name: String, weight: String, height: String) {
+        if (::prefs.isInitialized) {
+            prefs.edit().apply {
+                putString(KEY_USER_NAME, name)
+                putString(KEY_USER_WEIGHT, weight)
+                putString(KEY_USER_HEIGHT, height)
+                apply()
+            }
+            
+            // Also update profile.json for api compatibility
+            try {
+                val file = java.io.File(appContext.filesDir, "profile.json")
+                val json = if (file.exists()) {
+                    org.json.JSONObject(file.readText())
+                } else {
+                    org.json.JSONObject().apply {
+                        put("email", "athlete@example.com")
+                        put("goal", "muscle hypertrophy")
+                        put("philosophy", "hypertrophy")
+                        put("onboarding_complete", true)
+                    }
+                }
+                json.put("name", name)
+                json.put("weight", weight)
+                json.put("height", height)
+                file.writeText(json.toString())
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
         }
     }
 

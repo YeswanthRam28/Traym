@@ -31,6 +31,8 @@ import com.gymtracker.ui.viewmodels.ChatMessage
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.res.painterResource
+import com.gymtracker.R
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.runtime.mutableStateOf
@@ -85,7 +87,11 @@ fun HomeScreen(
                 contentColor = AppBlack,
                 shape = RoundedCornerShape(16.dp)
             ) {
-                Icon(Icons.Default.Person, contentDescription = "AI Coach")
+                Icon(
+                    painter = painterResource(id = R.drawable.ic_ai_coach),
+                    contentDescription = "AI Coach",
+                    modifier = Modifier.size(32.dp)
+                )
             }
         }
     ) { paddingValues ->

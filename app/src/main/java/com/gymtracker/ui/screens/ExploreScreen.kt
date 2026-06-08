@@ -39,19 +39,23 @@ fun ExploreScreen(
     splitViewModel: WorkoutSplitViewModel? = null
 ) {
     var selectedTab by remember { mutableIntStateOf(0) }
-    val tabs = listOf("Body Parts", "Targets", "Equipment", "Search")
+    val tabs = listOf("Body Parts", "Targets", "Equipment")
+    var searchQuery by remember { mutableStateOf("") }
+    var searchResults by remember { mutableStateOf<List<Exercise>>(emptyList()) }
     
     // View state navigation within this screen to keep MainActivity clean
     var selectedCategoryType by remember { mutableStateOf<String?>(null) } // "bodyPart", "target", "equipment"
     var selectedCategoryValue by remember { mutableStateOf<String?>(null) }
     var selectedExercise by remember { mutableStateOf<Exercise?>(null) }
 
-    BackHandler(enabled = selectedExercise != null || selectedCategoryValue != null) {
+    BackHandler(enabled = selectedExercise != null || selectedCategoryValue != null || searchQuery.isNotEmpty()) {
         if (selectedExercise != null) {
             selectedExercise = null
         } else if (selectedCategoryValue != null) {
             selectedCategoryValue = null
             selectedCategoryType = null
+        } else if (searchQuery.isNotEmpty()) {
+            searchQuery = ""
         }
     }
 
@@ -107,45 +111,81 @@ fun ExploreScreen(
                         )
                     }
                     
-                    ScrollableTabRow(
-                        selectedTabIndex = selectedTab,
-                        containerColor = AppBlack,
-                        contentColor = Acid,
-                        edgePadding = 24.dp,
-                        divider = {}
-                    ) {
-                        tabs.forEachIndexed { index, title ->
-                            Tab(
-                                selected = selectedTab == index,
-                                onClick = { selectedTab = index },
-                                text = { Text(title, color = if (selectedTab == index) Acid else Color.Gray) }
-                            )
-                        }
+                    // Search Bar at the Top
+                    Box(modifier = Modifier.padding(horizontal = 24.dp).padding(bottom = 16.dp)) {
+                        OutlinedTextField(
+                            value = searchQuery,
+                            onValueChange = { 
+                                searchQuery = it
+                                if (it.length >= 2) {
+                                    searchResults = ExerciseRepository.searchByName(it)
+                                } else {
+                                    searchResults = emptyList()
+                                }
+                            },
+                            modifier = Modifier.fillMaxWidth(),
+                            placeholder = { Text("Search exercises...", color = Color.Gray) },
+                            leadingIcon = { Icon(Icons.Default.Search, contentDescription = "Search", tint = Color.Gray) },
+                            colors = OutlinedTextFieldDefaults.colors(
+                                focusedBorderColor = Acid,
+                                unfocusedBorderColor = Color.DarkGray,
+                                focusedTextColor = Color.White,
+                                unfocusedTextColor = Color.White,
+                                focusedContainerColor = Dim, unfocusedContainerColor = Dim
+                            ),
+                            shape = RoundedCornerShape(12.dp)
+                        )
                     }
                     
-                    Spacer(modifier = Modifier.height(16.dp))
-                    
-                    when (selectedTab) {
-                        0 -> CategoryList(ExerciseRepository.getBodyParts()) { 
-                            selectedCategoryType = "bodyPart"
-                            selectedCategoryValue = it 
-                        }
-                        1 -> CategoryList(ExerciseRepository.getTargets()) { 
-                            selectedCategoryType = "target"
-                            selectedCategoryValue = it 
-                        }
-                        2 -> CategoryList(ExerciseRepository.getEquipment()) { 
-                            selectedCategoryType = "equipment"
-                            selectedCategoryValue = it 
-                        }
-                        3 -> SearchView(onExerciseClick = { exercise -> 
-                            if (selectionDayIndex != null && splitViewModel != null) {
-                                splitViewModel.addExerciseFromApi(selectionDayIndex, exercise.name)
-                                onNavigate("pop")
-                            } else {
-                                selectedExercise = exercise
+                    if (searchQuery.isNotEmpty()) {
+                        LazyColumn(
+                            contentPadding = PaddingValues(horizontal = 24.dp, vertical = 8.dp),
+                            verticalArrangement = Arrangement.spacedBy(12.dp)
+                        ) {
+                            items(searchResults) { exercise ->
+                                ExerciseItem(exercise) { ex ->
+                                    if (selectionDayIndex != null && splitViewModel != null) {
+                                        splitViewModel.addExerciseFromApi(selectionDayIndex, ex.name)
+                                        onNavigate("pop")
+                                    } else {
+                                        selectedExercise = ex
+                                    }
+                                }
                             }
-                        })
+                        }
+                    } else {
+                        ScrollableTabRow(
+                            selectedTabIndex = selectedTab,
+                            containerColor = AppBlack,
+                            contentColor = Acid,
+                            edgePadding = 24.dp,
+                            divider = {}
+                        ) {
+                            tabs.forEachIndexed { index, title ->
+                                Tab(
+                                    selected = selectedTab == index,
+                                    onClick = { selectedTab = index },
+                                    text = { Text(title, color = if (selectedTab == index) Acid else Color.Gray) }
+                                )
+                            }
+                        }
+                        
+                        Spacer(modifier = Modifier.height(16.dp))
+                        
+                        when (selectedTab) {
+                            0 -> CategoryList(ExerciseRepository.getBodyParts()) { 
+                                selectedCategoryType = "bodyPart"
+                                selectedCategoryValue = it 
+                            }
+                            1 -> CategoryList(ExerciseRepository.getTargets()) { 
+                                selectedCategoryType = "target"
+                                selectedCategoryValue = it 
+                            }
+                            2 -> CategoryList(ExerciseRepository.getEquipment()) { 
+                                selectedCategoryType = "equipment"
+                                selectedCategoryValue = it 
+                            }
+                        }
                     }
                 }
             }
@@ -179,45 +219,7 @@ fun CategoryList(items: List<String>, onClick: (String) -> Unit) {
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun SearchView(onExerciseClick: (Exercise) -> Unit) {
-    var query by remember { mutableStateOf("") }
-    var results by remember { mutableStateOf<List<Exercise>>(emptyList()) }
-    
-    Column(modifier = Modifier.fillMaxSize().padding(horizontal = 24.dp)) {
-        OutlinedTextField(
-            value = query,
-            onValueChange = { 
-                query = it
-                if (it.length >= 2) {
-                    results = ExerciseRepository.searchByName(it)
-                } else {
-                    results = emptyList()
-                }
-            },
-            modifier = Modifier.fillMaxWidth(),
-            placeholder = { Text("Search exercises...", color = Color.Gray) },
-            leadingIcon = { Icon(Icons.Default.Search, contentDescription = "Search", tint = Color.Gray) },
-            colors = OutlinedTextFieldDefaults.colors(
-                focusedBorderColor = Acid,
-                unfocusedBorderColor = Color.DarkGray,
-                focusedTextColor = Color.White,
-                unfocusedTextColor = Color.White,
-                focusedContainerColor = Dim, unfocusedContainerColor = Dim
-            ),
-            shape = RoundedCornerShape(12.dp)
-        )
-        
-        Spacer(modifier = Modifier.height(16.dp))
-        
-        LazyColumn(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-            items(results) { exercise ->
-                ExerciseItem(exercise, onExerciseClick)
-            }
-        }
-    }
-}
+
 
 @Composable
 fun ExerciseListView(

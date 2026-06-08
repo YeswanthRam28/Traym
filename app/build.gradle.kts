@@ -131,3 +131,5 @@ tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().configureEach 
         freeCompilerArgs = freeCompilerArgs + "-Xskip-metadata-version-check"
     }
 }
+
+// Trigger gradle sync to read new .env values

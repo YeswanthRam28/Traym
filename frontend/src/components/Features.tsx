@@ -4,7 +4,7 @@
  */
 
 import React, { useRef, useState, useEffect } from 'react';
-import { Dumbbell, Activity, Trophy, Users, ArrowRight } from 'lucide-react';
+import { Dumbbell, Activity, Trophy, Users, ArrowRight, Database, Layers } from 'lucide-react';
 import MaskHeading from './MaskHeading';
 import ScrollReveal from './ScrollReveal';
 
@@ -44,6 +44,20 @@ const CARDS: CardData[] = [
     icon: Users,
     desc: 'A private locker room of dedicated lifters. Share footage, feedback, and high-fives on true heavy pulls. Zero noise, zero fitness influencers.',
     tag: 'INNER_CIRCLE_NET',
+  },
+  {
+    id: 'sets',
+    title: 'Advanced Set Types',
+    icon: Layers,
+    desc: 'Seamlessly toggle sets between Normal, Warm-up, Drop Sets, and Super Sets with a single tap. Precision tracking for advanced programming.',
+    tag: 'SET_MODIFIER_v2',
+  },
+  {
+    id: 'notion',
+    title: 'Notion Sync Integration',
+    icon: Database,
+    desc: 'Instantly sync your workout logs to your personal Notion database. Full architectural backup of your training history.',
+    tag: 'NOTION_API_LINK',
   },
 ];
 

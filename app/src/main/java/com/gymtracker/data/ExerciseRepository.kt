@@ -81,7 +81,30 @@ object ExerciseRepository {
     fun getEquipment(): List<String> = allExercises.map { it.equipment.replaceFirstChar { c -> c.uppercase() } }.distinct().sorted()
 
     fun searchByName(query: String): List<Exercise> {
-        return allExercises.filter { it.name.contains(query, ignoreCase = true) }
+        val lowerQuery = query.lowercase()
+        
+        // Map common gym slang to the formal API database names
+        val aliases = mapOf(
+            "pec deck" to "lever seated fly",
+            "lat pulldown" to "pulldown",
+            "face pull" to "rear delt",
+            "rdl" to "romanian deadlift",
+            "db" to "dumbbell",
+            "bb" to "barbell"
+        )
+        
+        var expandedQuery = lowerQuery
+        aliases.forEach { (common, formal) ->
+            if (lowerQuery.contains(common)) {
+                expandedQuery = formal
+            }
+        }
+        
+        return allExercises.filter { 
+            it.name.contains(lowerQuery, ignoreCase = true) || 
+            it.name.contains(expandedQuery, ignoreCase = true) ||
+            it.target.contains(expandedQuery, ignoreCase = true)
+        }
     }
 
     fun getByBodyPart(bodyPart: String): List<Exercise> {

@@ -19,7 +19,7 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.platform.LocalContext
 import androidx.credentials.CredentialManager
 import androidx.credentials.GetCredentialRequest
-import com.google.android.libraries.identity.googleid.GetGoogleIdOption
+import com.google.android.libraries.identity.googleid.GetSignInWithGoogleOption
 import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
 import com.gymtracker.auth.SessionManager
 import com.gymtracker.ui.theme.*
@@ -76,10 +76,7 @@ fun LoginScreen(
                         errorMessage = null
                         try {
                             val credentialManager = CredentialManager.create(context)
-                            val googleIdOption = GetGoogleIdOption.Builder()
-                                .setFilterByAuthorizedAccounts(false)
-                                .setServerClientId("273285141091-jrbvb6r9g3pkj6fhttsm2ir6roku18fo.apps.googleusercontent.com")
-                                .setAutoSelectEnabled(false)
+                            val googleIdOption = GetSignInWithGoogleOption.Builder("273285141091-jrbvb6r9g3pkj6fhttsm2ir6roku18fo.apps.googleusercontent.com")
                                 .build()
 
                             val request = GetCredentialRequest.Builder()

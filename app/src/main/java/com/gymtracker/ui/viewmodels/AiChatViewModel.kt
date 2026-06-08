@@ -401,8 +401,18 @@ class AiChatViewModel : ViewModel() {
                     }
                 }
                 "update_plan" -> {
-                    val planJson = args.getString("plan_json")
-                    val response = ApiClient.apiService.updateActivePlan(com.gymtracker.network.UpdatePlanRequest(planJson))
+                    val planJsonStr = if (args.optJSONObject("plan_json") != null) {
+                        args.getJSONObject("plan_json").toString()
+                    } else if (args.optJSONArray("plan_json") != null) {
+                        org.json.JSONObject().apply { 
+                            put("split", "Custom AI Plan")
+                            put("week_number", 1)
+                            put("days", args.getJSONArray("plan_json")) 
+                        }.toString()
+                    } else {
+                        args.getString("plan_json")
+                    }
+                    val response = ApiClient.apiService.updateActivePlan(com.gymtracker.network.UpdatePlanRequest(planJsonStr))
                     if (response.isSuccessful) {
                         "Plan updated successfully!"
                     } else {

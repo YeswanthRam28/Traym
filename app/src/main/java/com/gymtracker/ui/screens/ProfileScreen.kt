@@ -23,6 +23,7 @@ import com.gymtracker.ui.theme.*
 import com.gymtracker.ui.viewmodels.ProfileViewModel
 import kotlinx.coroutines.launch
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
 
 data class ProfileUiState(
     val userName: String = "",
@@ -71,6 +72,7 @@ fun ProfileScreen(
 
     var showNotionDialog by remember { mutableStateOf(false) }
     var showConnectedAppsDialog by remember { mutableStateOf(false) }
+    var showAccountDetailsDialog by remember { mutableStateOf(false) }
 
     val settingsItems = listOf(
         "Account Details", "Training Preferences", "Connected Apps", 
@@ -202,6 +204,9 @@ fun ProfileScreen(
                                             Toast.makeText(context, "Local data cleared!", Toast.LENGTH_SHORT).show()
                                             onNavigate("home")
                                         }
+                                    }
+                                    "Account Details" -> {
+                                        showAccountDetailsDialog = true
                                     }
                                     else -> {
                                         Toast.makeText(context, "$item coming soon", Toast.LENGTH_SHORT).show()
@@ -522,8 +527,81 @@ fun ProfileScreen(
                     Text("DONE", color = Acid)
                 }
             },
-            containerColor = Dim,
-            shape = RoundedCornerShape(0.dp)
+            containerColor = AppBlack,
+            shape = RoundedCornerShape(16.dp)
+        )
+    }
+
+    if (showAccountDetailsDialog) {
+        var editName by remember { mutableStateOf(SessionManager.getUserName()) }
+        var editWeight by remember { mutableStateOf(SessionManager.getUserWeight()) }
+        var editHeight by remember { mutableStateOf(SessionManager.getUserHeight()) }
+
+        AlertDialog(
+            onDismissRequest = { showAccountDetailsDialog = false },
+            title = {
+                Text(
+                    text = "ACCOUNT DETAILS",
+                    style = Typography.headlineMedium.copy(color = Acid)
+                )
+            },
+            text = {
+                Column(modifier = Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(16.dp)) {
+                    OutlinedTextField(
+                        value = editName,
+                        onValueChange = { editName = it },
+                        label = { Text("Name", color = Color.Gray) },
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedBorderColor = Acid,
+                            unfocusedBorderColor = Color.DarkGray,
+                            focusedTextColor = Color.White,
+                            unfocusedTextColor = Color.White
+                        )
+                    )
+                    OutlinedTextField(
+                        value = editWeight,
+                        onValueChange = { editWeight = it },
+                        label = { Text("Weight (kg)", color = Color.Gray) },
+                        modifier = Modifier.fillMaxWidth(),
+                        keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(keyboardType = androidx.compose.ui.text.input.KeyboardType.Number),
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedBorderColor = Acid,
+                            unfocusedBorderColor = Color.DarkGray,
+                            focusedTextColor = Color.White,
+                            unfocusedTextColor = Color.White
+                        )
+                    )
+                    OutlinedTextField(
+                        value = editHeight,
+                        onValueChange = { editHeight = it },
+                        label = { Text("Height (cm)", color = Color.Gray) },
+                        modifier = Modifier.fillMaxWidth(),
+                        keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(keyboardType = androidx.compose.ui.text.input.KeyboardType.Number),
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedBorderColor = Acid,
+                            unfocusedBorderColor = Color.DarkGray,
+                            focusedTextColor = Color.White,
+                            unfocusedTextColor = Color.White
+                        )
+                    )
+                }
+            },
+            confirmButton = {
+                TextButton(onClick = {
+                    viewModel.updateProfileDetails(editName, editWeight, editHeight)
+                    showAccountDetailsDialog = false
+                }) {
+                    Text("SAVE", color = Acid, fontWeight = FontWeight.Bold)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showAccountDetailsDialog = false }) {
+                    Text("CANCEL", color = Color.Gray)
+                }
+            },
+            containerColor = AppBlack,
+            shape = RoundedCornerShape(16.dp)
         )
     }
 }

@@ -105,8 +105,8 @@ fun WorkoutSplitScreen(
                 verticalArrangement = Arrangement.spacedBy(12.dp),
                 contentPadding = PaddingValues(vertical = 24.dp)
             ) {
-                itemsIndexed(uiState.days, key = { index, day -> day.hashCode() + index }) { index, day ->
-                    ReorderableItem(state, key = day.hashCode() + index) { isDragging ->
+                itemsIndexed(uiState.days, key = { _, day -> day.id }) { index, day ->
+                    ReorderableItem(state, key = day.id) { isDragging ->
                         SplitDayCard(
                             day = day,
                             isEditMode = isEditMode,
@@ -140,6 +140,7 @@ fun WorkoutSplitScreen(
                 onUpdateExercise = { exIndex, ex -> viewModel.updateExercise(dayIndex, exIndex, ex) },
                 onMoveExercise = { from, to -> viewModel.moveExercise(dayIndex, from, to) },
                 onToggleSet = { exIndex, setIndex -> viewModel.toggleSetCompleted(dayIndex, exIndex, setIndex) },
+                onCycleSetType = { exIndex, setIndex -> viewModel.cycleSetType(dayIndex, exIndex, setIndex) },
                 onUpdateSet = { exIndex, setIndex, weightInput, repsInput -> viewModel.updateActualSet(dayIndex, exIndex, setIndex, weightInput, repsInput) },
                 onExerciseClick = { selectedExerciseNameForHistory = it },
                 onSaveExercise = { exIndex -> viewModel.saveExercise(dayIndex, exIndex) },
@@ -328,6 +329,7 @@ fun DayDetailView(
     onUpdateExercise: (Int, PlannedExercise) -> Unit,
     onMoveExercise: (Int, Int) -> Unit,
     onToggleSet: (Int, Int) -> Unit,
+    onCycleSetType: (Int, Int) -> Unit,
     onUpdateSet: (Int, Int, String, String) -> Unit,
     onExerciseClick: (String) -> Unit,
     onSaveExercise: (Int) -> Unit,
@@ -376,8 +378,8 @@ fun DayDetailView(
                 verticalArrangement = Arrangement.spacedBy(24.dp),
                 contentPadding = PaddingValues(bottom = 80.dp)
             ) {
-                itemsIndexed(day.exercises, key = { index, ex -> ex.hashCode() + index }) { index, exercise ->
-                    ReorderableItem(state, key = exercise.hashCode() + index) { isDragging ->
+                itemsIndexed(day.exercises, key = { _, ex -> ex.id }) { index, exercise ->
+                    ReorderableItem(state, key = exercise.id) { isDragging ->
                         Column(
                             modifier = Modifier
                                 .fillMaxWidth()
@@ -442,14 +444,39 @@ fun DayDetailView(
 
                         // Actual Sets
                         exercise.actualSets.forEachIndexed { setIdx, actualSet ->
-                            Row(
-                                modifier = Modifier
+                            key(actualSet.id) {
+                                Row(
+                                    modifier = Modifier
                                     .fillMaxWidth()
                                     .padding(horizontal = 16.dp, vertical = 4.dp),
                                 horizontalArrangement = Arrangement.SpaceBetween,
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
-                                Text("${setIdx + 1}", modifier = Modifier.width(32.dp), style = Typography.bodyMedium.copy(color = OffWhite))
+                                Box(
+                                    modifier = Modifier
+                                        .width(32.dp)
+                                        .clickable { onCycleSetType(index, setIdx) },
+                                    contentAlignment = Alignment.CenterStart
+                                ) {
+                                    val setTypeStr = actualSet.setType
+                                    if (setTypeStr == "Normal") {
+                                        Text("${setIdx + 1}", style = Typography.bodyMedium.copy(color = OffWhite))
+                                    } else {
+                                        val displayChar = when (setTypeStr) {
+                                            "Drop Set" -> "D"
+                                            "Super Set" -> "S"
+                                            "Warm-up" -> "W"
+                                            else -> "${setIdx + 1}"
+                                        }
+                                        val displayColor = when (setTypeStr) {
+                                            "Drop Set" -> Color(0xFFFFA500)
+                                            "Super Set" -> Color(0xFF00BFFF)
+                                            "Warm-up" -> Color(0xFFFFD700)
+                                            else -> OffWhite
+                                        }
+                                        Text(displayChar, style = Typography.bodyMedium.copy(color = displayColor, fontWeight = FontWeight.Bold))
+                                    }
+                                }
                                 
                                 TextField(
                                     value = actualSet.weightInput,
@@ -505,6 +532,7 @@ fun DayDetailView(
                                         }
                                     }
                                 }
+                            }
                             }
                         }
 

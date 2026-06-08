@@ -33,6 +33,10 @@ fun CommunityScreen(
     onNavigate: (String) -> Unit,
     viewModel: CommunityViewModel = viewModel()
 ) {
+    LaunchedEffect(Unit) {
+        viewModel.refresh()
+    }
+
     Scaffold(
         containerColor = AppBlack,
         bottomBar = { NavBar(currentRoute = currentRoute, onNavigate = onNavigate) }
