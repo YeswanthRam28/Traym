@@ -1,0 +1,12 @@
+services:
+  - type: web
+    name: traym-server
+    env: node
+    rootDir: frontend
+    buildCommand: npm install && npm run build
+    startCommand: node server.js
+    envVars:
+      - key: NEON_DATABASE_URL
+        sync: false
+      - key: TRAYM_ADMIN_PASS
+        sync: false
