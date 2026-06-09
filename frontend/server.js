@@ -176,6 +176,27 @@ app.post('/api/admin/messages', adminAuth, async (req, res) => {
     }
 });
 
+// Get Active Messages
+app.get('/api/admin/messages', adminAuth, async (req, res) => {
+    try {
+        const result = await pool.query('SELECT * FROM user_messages ORDER BY created_at DESC LIMIT 50');
+        res.json(result.rows);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// Delete Message
+app.delete('/api/admin/messages/:id', adminAuth, async (req, res) => {
+    try {
+        const { id } = req.params;
+        await pool.query('DELETE FROM user_messages WHERE id = $1', [id]);
+        res.json({ success: true });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
 // Get AI Prompt
 app.get('/api/admin/prompts/:key', adminAuth, async (req, res) => {
     try {

@@ -18,6 +18,7 @@ export default function AdminDashboard() {
   const [targetVersion, setTargetVersion] = useState('2');
   const [isSending, setIsSending] = useState(false);
   const [isMessagingEnabled, setIsMessagingEnabled] = useState(false);
+  const [activeMessages, setActiveMessages] = useState<any[]>([]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -46,8 +47,21 @@ export default function AdminDashboard() {
       fetchPrompt();
       fetchStats();
       fetchMaintenance();
+      fetchMessages();
     }
   }, [isAuth]);
+
+  const fetchMessages = async () => {
+    try {
+      const res = await fetch('/api/admin/messages', {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      const data = await res.json();
+      setActiveMessages(data);
+    } catch (err) {
+      console.error(err);
+    }
+  };
 
   const fetchStats = async () => {
     try {
@@ -177,21 +191,34 @@ export default function AdminDashboard() {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}` 
         },
-        body: JSON.stringify({
-          message: messageContent,
-          targetType,
-          targetUserIds: Array.from(selectedUsers),
-          targetVersion: parseInt(targetVersion)
-        })
+        body: JSON.stringify({ message: messageContent, targetType, targetUserIds: Array.from(selectedUsers), targetVersion })
       });
-      setMessageContent('');
-      setSelectedUsers(new Set());
-      alert('Message sent successfully!');
-    } catch (err) {
-      setError('Failed to send message.');
-      console.error(err);
+      const data = await res.json();
+      if (data.success) {
+        setMessageContent('');
+        setSelectedUsers(new Set());
+        fetchMessages();
+        alert('Message sent successfully!');
+      } else {
+        setError(data.error || 'Failed to send message');
+      }
+    } catch (err: any) {
+      setError(err.message);
     } finally {
       setIsSending(false);
+    }
+  };
+
+  const handleDeleteMessage = async (id: number) => {
+    if (!window.confirm('Are you sure you want to recall this message?')) return;
+    try {
+      const res = await fetch(`/api/admin/messages/${id}`, {
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (res.ok) fetchMessages();
+    } catch (err) {
+      console.error(err);
     }
   };
 
@@ -397,6 +424,33 @@ export default function AdminDashboard() {
               </button>
             </div>
           </div>
+
+          {/* Active Messages List */}
+          {activeMessages.length > 0 && (
+            <div className="mt-8 border-t border-[#2A2A2A] pt-6">
+              <h3 className="font-syne text-sm uppercase tracking-widest text-[#D6FF00] mb-4">Active Messages</h3>
+              <div className="space-y-3">
+                {activeMessages.map(msg => (
+                  <div key={msg.id} className="flex items-center justify-between bg-[#1A1A1A] border border-[#333] p-4">
+                    <div>
+                      <div className="text-xs text-[#666] mb-1 font-mono">
+                        {new Date(msg.created_at).toLocaleString()} 
+                        {msg.target_user_id ? ` | DM to User ${msg.target_user_id}` : 
+                         msg.target_version ? ` | Update Nag (v${msg.target_version})` : ' | Global Broadcast'}
+                      </div>
+                      <div className="text-sm font-mono text-white whitespace-pre-wrap">{msg.message}</div>
+                    </div>
+                    <button 
+                      onClick={() => handleDeleteMessage(msg.id)}
+                      className="ml-4 px-3 py-1 bg-red-900/30 text-red-500 border border-red-900/50 hover:bg-red-900 hover:text-white transition-colors text-xs font-mono uppercase tracking-widest whitespace-nowrap"
+                    >
+                      Delete
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </section>
       </div>
     </div>
