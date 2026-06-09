@@ -33,17 +33,17 @@ const CARDS: CardData[] = [
   },
   {
     id: 'pr',
-    title: 'PR Tracker',
+    title: 'Enhanced Progress Tracking',
     icon: Trophy,
-    desc: 'Shatter your mechanical ceilings. Comprehensive record logs of absolute 1RMs, relative volume limits, and linear progression coefficients plotted instantly.',
-    tag: 'PR_INDEX_ACTIVE',
+    desc: 'Shatter your ceilings. Now with a hyper-accurate Progress tab that instantly graphs your absolute 1RMs, relative volume limits, and linear progression coefficients.',
+    tag: 'PR_INDEX_v3.2',
   },
   {
     id: 'feed',
-    title: 'Community Feed',
+    title: 'Community Leaderboard Stalking',
     icon: Users,
-    desc: 'A private locker room of dedicated lifters. Share footage, feedback, and high-fives on true heavy pulls. Zero noise, zero fitness influencers.',
-    tag: 'INNER_CIRCLE_NET',
+    desc: 'See exactly how the top athletes are lifting. Tap anyone on the community leaderboard to instantly pull up their complete workout log for the day. Learn from the elite.',
+    tag: 'STALK_MODE_v3.2',
   },
   {
     id: 'notion',
@@ -54,10 +54,10 @@ const CARDS: CardData[] = [
   },
   {
     id: 'sets',
-    title: 'Advanced Sets',
+    title: 'Tap-to-Cycle Set Modes',
     icon: Layers,
-    desc: 'Instantly toggle sets into Drop Sets, Super Sets, or Warm-ups. The AI engine reads these context tags to accurately measure progressive overload.',
-    tag: 'TACTICAL_SETS',
+    desc: 'Just tap the set number to instantly cycle between Normal Sets, Drop Sets, Super Sets, and Warm-ups! The AI engine reads these context tags to accurately measure overload.',
+    tag: 'TACTICAL_SETS_v3.2',
   },
 ];
 

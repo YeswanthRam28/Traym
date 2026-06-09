@@ -67,6 +67,46 @@ fun LeaderboardView(viewModel: CommunityViewModel) {
     val mockUsers by viewModel.leaderboard.collectAsState(initial = emptyList())
     val isRefreshing by viewModel.isRefreshing.collectAsState()
     
+    var userToStalk by remember { mutableStateOf<com.gymtracker.network.LeaderboardUser?>(null) }
+    var showStalkDialog by remember { mutableStateOf(false) }
+    var showWorkoutSheet by remember { mutableStateOf(false) }
+    
+    if (showStalkDialog && userToStalk != null) {
+        AlertDialog(
+            onDismissRequest = { showStalkDialog = false },
+            containerColor = AppBlack,
+            titleContentColor = OffWhite,
+            textContentColor = OffWhite,
+            title = { Text("Want to stalk them?", fontFamily = AnybodyFamily, fontWeight = FontWeight.Bold) },
+            text = { Text("See what ${userToStalk?.name} lifted in their most recent session.") },
+            confirmButton = {
+                TextButton(onClick = { 
+                    showStalkDialog = false
+                    if (!userToStalk?.latestWorkoutJson.isNullOrEmpty()) {
+                        showWorkoutSheet = true
+                    }
+                }) {
+                    Text("Sure", color = Acid, fontWeight = FontWeight.Bold)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showStalkDialog = false }) {
+                    Text("Nah", color = Color.Gray)
+                }
+            }
+        )
+    }
+    
+    if (showWorkoutSheet && userToStalk != null) {
+        ModalBottomSheet(
+            onDismissRequest = { showWorkoutSheet = false },
+            containerColor = AppBlack,
+            dragHandle = { BottomSheetDefaults.DragHandle(color = Color.DarkGray) }
+        ) {
+            StalkBottomSheetContent(userToStalk!!)
+        }
+    }
+    
     PullToRefreshBox(
         isRefreshing = isRefreshing,
         onRefresh = { viewModel.refresh() },
@@ -92,6 +132,10 @@ fun LeaderboardView(viewModel: CommunityViewModel) {
                     .clip(RoundedCornerShape(16.dp))
                     .background(cardColor)
                     .border(1.dp, badgeColor.copy(alpha = 0.3f), RoundedCornerShape(16.dp))
+                    .clickable { 
+                        userToStalk = user
+                        showStalkDialog = true
+                    }
                     .padding(16.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
@@ -133,4 +177,69 @@ fun LeaderboardView(viewModel: CommunityViewModel) {
         }
     }
 }
+}
+
+@Composable
+fun StalkBottomSheetContent(user: com.gymtracker.network.LeaderboardUser) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 24.dp, vertical = 16.dp)
+    ) {
+        Text(
+            text = "${user.name}'s Workout",
+            style = Typography.titleLarge.copy(color = Acid, fontWeight = FontWeight.Black),
+            modifier = Modifier.padding(bottom = 16.dp)
+        )
+        
+        LazyColumn(modifier = Modifier.fillMaxWidth()) {
+            try {
+                val jsonStr = user.latestWorkoutJson ?: "[]"
+                val array = org.json.JSONArray(jsonStr)
+                if (array.length() == 0) {
+                    item {
+                        Text(text = "No recent workout data available.", color = Color.Gray)
+                    }
+                } else {
+                    for (i in 0 until array.length()) {
+                        val exercise = array.getJSONObject(i)
+                        val title = exercise.optString("title", "Unknown Exercise")
+                        val sets = exercise.optJSONArray("sets") ?: org.json.JSONArray()
+                        
+                        item {
+                            Text(
+                                text = title,
+                                style = Typography.titleMedium.copy(color = OffWhite, fontWeight = FontWeight.Bold),
+                                modifier = Modifier.padding(top = 16.dp, bottom = 8.dp)
+                            )
+                        }
+                        
+                        for (j in 0 until sets.length()) {
+                            val setObj = sets.getJSONObject(j)
+                            val weight = setObj.optDouble("weight_kg", 0.0)
+                            val reps = setObj.optInt("reps", 0)
+                            item {
+                                Row(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(vertical = 4.dp, horizontal = 16.dp),
+                                    horizontalArrangement = Arrangement.SpaceBetween
+                                ) {
+                                    Text(text = "Set ${j + 1}", color = Color.Gray, fontSize = 14.sp)
+                                    Text(text = "${weight}kg x $reps", color = OffWhite, fontSize = 14.sp, fontWeight = FontWeight.Medium)
+                                }
+                            }
+                        }
+                    }
+                }
+            } catch (e: Exception) {
+                item {
+                    Text(text = "Failed to load workout details.", color = Color.Red)
+                }
+            }
+            item {
+                Spacer(modifier = Modifier.height(48.dp))
+            }
+        }
+    }
 }

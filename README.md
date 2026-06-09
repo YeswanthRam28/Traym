@@ -1,18 +1,18 @@
-# Traym V3 🏋️‍♂️
+# Traym V3.2 🏋️‍♂️
 
 A modern, dynamic, and intuitive workout tracker built with Kotlin and Jetpack Compose. 
-Traym V3 allows you to manage your fitness journey with customizable workout splits, beautiful UI/UX, dynamic glowing heatmaps, and AI-driven features.
+Traym V3.2 allows you to manage your fitness journey with customizable workout splits, beautiful UI/UX, dynamic glowing heatmaps, and AI-driven features.
 
 ## 🚀 Features
 - **Dynamic Body Heatmaps**: Visualizes your daily volume directly onto a sleek anatomical glowing overlay.
 - **Dynamic Workout Splits**: Completely customizable drag-and-drop daily routines.
 - **AI Chat Coach**: Built-in AI powered by OpenRouter for fitness advice, fully integrated with standardized database exercises.
 - **Rich Exercise Database**: Backed by RapidAPI for comprehensive exercise instructions.
-- **Community Leaderboard**: Compete globally based on weekly volume (backed by Neon PostgreSQL).
-- **Advanced Set Types**: Instantly toggle sets as Drop Sets, Super Sets, or Warm-ups for precise tracking.
+- **Community Leaderboard & Stalking**: Compete globally based on weekly volume (backed by Neon PostgreSQL). Tap on any athlete to view their complete workout log for the day.
+- **Tap-to-Cycle Set Modes**: Instantly toggle sets as Drop Sets, Super Sets, or Warm-ups simply by tapping the set number.
 - **Notion Sync**: Seamlessly sync your workout history to a Notion database.
 - **Offline & Sync Capabilities**: Robust state management syncing with your local device.
-- **Web Landing Page**: A beautifully designed React + Vite landing page to distribute the app directly and guide users through setting up the Notion integration.
+- **Admin Command Center**: A React + Vite Web Dashboard to manage the leaderboard, update AI system prompts in real-time, toggle maintenance mode, and send Direct Messages/Update Nags to users.
 
 ## 🛠️ Setup Instructions
 

@@ -125,7 +125,10 @@ class AiChatViewModel : ViewModel() {
         val messagesArr = JSONArray()
         
         // System message
-        val systemPrompt = """
+        val communityRepo = com.gymtracker.network.CommunityRepository()
+        val customPrompt = communityRepo.getSystemPrompt("ai_system_prompt")
+        
+        val defaultSystemPrompt = """
             You are Traym, a premium, hyper-personalized AI strength and conditioning coach.
             Your purpose is to motivate, advise, analyze form, and suggest plan modifications.
             Always maintain a helpful, encouraging, and expert tone. Keep responses relatively concise but highly informative and practical.
@@ -140,11 +143,10 @@ class AiChatViewModel : ViewModel() {
             
             IMPORTANT EXERCISE NAMING RULE:
             When adding exercises to a plan, you MUST use the exact official API name. ALWAYS use the `search_exercises` tool first to find the exact official API name before calling `update_plan`. NEVER invent or guess exercise names.
-
-            Here is the current state of the user's progress, training plan, and history:
-            
-            ${getUserContext()}
         """.trimIndent()
+
+        val basePrompt = customPrompt ?: defaultSystemPrompt
+        val systemPrompt = "$basePrompt\n\nHere is the current state of the user's progress, training plan, and history:\n\n${getUserContext()}"
         
         messagesArr.put(JSONObject().apply {
             put("role", "system")
