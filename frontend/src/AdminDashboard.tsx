@@ -17,6 +17,7 @@ export default function AdminDashboard() {
   const [targetType, setTargetType] = useState('broadcast');
   const [targetVersion, setTargetVersion] = useState('2');
   const [isSending, setIsSending] = useState(false);
+  const [isMessagingEnabled, setIsMessagingEnabled] = useState(false);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -374,10 +375,23 @@ export default function AdminDashboard() {
                 </div>
               )}
 
+              <div className="flex items-center gap-3 py-2">
+                <input 
+                  type="checkbox" 
+                  id="enableMessaging"
+                  checked={isMessagingEnabled}
+                  onChange={(e) => setIsMessagingEnabled(e.target.checked)}
+                  className="w-4 h-4 accent-[#D6FF00]"
+                />
+                <label htmlFor="enableMessaging" className="text-xs uppercase tracking-widest text-[#999] cursor-pointer">
+                  Unlock Message Sending
+                </label>
+              </div>
+
               <button
                 onClick={handleSendMessage}
-                disabled={isSending}
-                className="w-full bg-[#D6FF00] text-black font-syne font-bold uppercase tracking-widest py-3 hover:bg-white transition-colors disabled:opacity-50"
+                disabled={isSending || !isMessagingEnabled}
+                className="w-full bg-[#D6FF00] text-black font-syne font-bold uppercase tracking-widest py-3 hover:bg-white transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
               >
                 {isSending ? 'Sending...' : 'Send Message'}
               </button>
