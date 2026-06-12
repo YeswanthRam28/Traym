@@ -19,10 +19,12 @@ data class Exercise(
 
 object ExerciseRepository {
     private var allExercises: List<Exercise> = emptyList()
-    
-    // Using the user's provided RapidAPI Key securely
-    val RAPID_API_KEY = com.gymtracker.BuildConfig.RAPID_API_KEY
-    const val RAPID_API_HOST = "exercisedb.p.rapidapi.com"
+
+    private const val GITHUB_IMAGE_BASE = "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises"
+
+    fun getImageUrl(exerciseId: String): String {
+        return "$GITHUB_IMAGE_BASE/$exerciseId/0.jpg"
+    }
 
     init {
         loadData()
@@ -85,12 +87,14 @@ object ExerciseRepository {
         
         // Map common gym slang to the formal API database names
         val aliases = mapOf(
-            "pec deck" to "lever seated fly",
-            "lat pulldown" to "pulldown",
-            "face pull" to "rear delt",
+            "pec deck" to "butterfly",
+            "lat pulldown" to "lat pulldown",
+            "face pull" to "cable rear delt fly",
             "rdl" to "romanian deadlift",
             "db" to "dumbbell",
-            "bb" to "barbell"
+            "bb" to "barbell",
+            "ohp" to "overhead press",
+            "cgbp" to "close grip bench press"
         )
         
         var expandedQuery = lowerQuery

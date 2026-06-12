@@ -72,10 +72,13 @@ fun HomeScreen(
     Scaffold(
         containerColor = AppBlack,
         bottomBar = {
-            NavBar(
-                currentRoute = currentRoute,
-                onNavigate = onNavigate
-            )
+            Column {
+                com.gymtracker.ui.components.NowPlayingBar(modifier = Modifier.padding(bottom = 8.dp))
+                NavBar(
+                    currentRoute = currentRoute,
+                    onNavigate = onNavigate
+                )
+            }
         },
         floatingActionButton = {
             FloatingActionButton(
@@ -194,7 +197,7 @@ fun HomeScreen(
             Spacer(modifier = Modifier.height(24.dp))
             
             val bigThreePrs = uiState.recentPrs.filter { it.isBigThree }
-            val recentPrs = uiState.recentPrs.filter { !it.isBigThree }
+            val recentPrs = uiState.recentPrs.filter { !it.isBigThree }.take(5)
 
             if (bigThreePrs.isNotEmpty()) {
                 Text(

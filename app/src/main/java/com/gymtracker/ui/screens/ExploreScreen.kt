@@ -17,13 +17,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
-import coil.request.ImageRequest
 import com.gymtracker.data.Exercise
 import com.gymtracker.data.ExerciseRepository
 import com.gymtracker.ui.components.NavBar
@@ -288,20 +286,12 @@ fun ExerciseDetailView(
     exercise: Exercise,
     onBack: () -> Unit
 ) {
-    val context = LocalContext.current
-    val imageRequest = remember(exercise.id) {
-        ImageRequest.Builder(context)
-            .data("https://${ExerciseRepository.RAPID_API_HOST}/image?exerciseId=${exercise.id}&resolution=360")
-            .addHeader("x-rapidapi-key", ExerciseRepository.RAPID_API_KEY)
-            .addHeader("x-rapidapi-host", ExerciseRepository.RAPID_API_HOST)
-            .crossfade(true)
-            .build()
-    }
+    val imageUrl = ExerciseRepository.getImageUrl(exercise.id)
 
     Column(modifier = Modifier.fillMaxSize()) {
         Box(modifier = Modifier.fillMaxWidth().height(250.dp)) {
             AsyncImage(
-                model = imageRequest,
+                model = imageUrl,
                 contentDescription = exercise.name,
                 modifier = Modifier.fillMaxSize().background(Color.White),
                 contentScale = ContentScale.Fit

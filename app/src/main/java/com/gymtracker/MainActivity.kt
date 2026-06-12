@@ -33,6 +33,7 @@ import com.gymtracker.ui.screens.*
 import com.gymtracker.ui.viewmodels.ProgressViewModel
 import com.gymtracker.ui.viewmodels.WorkoutSplitViewModel
 import android.content.Intent
+import com.gymtracker.media.NowPlayingManager
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -40,6 +41,8 @@ class MainActivity : ComponentActivity() {
         
         SessionManager.init(this)
         SessionManager.authToken?.let { com.gymtracker.network.ApiClient.setAuthToken(it) }
+        
+        NowPlayingManager.startListening(this)
         
         handleIntent(intent)
         

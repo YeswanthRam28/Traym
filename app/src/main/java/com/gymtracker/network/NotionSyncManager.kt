@@ -366,8 +366,16 @@ object NotionSyncManager {
                         val weight = setObj.optDouble("weight_kg", 0.0)
                         val reps = setObj.optInt("reps", 0)
                         val rpe = setObj.optDouble("rpe", 8.0)
-                        
-                        put("Type", JSONObject().put("select", JSONObject().put("name", "Working")))
+                        val rawType = setObj.optString("set_type", "Normal")
+                        val notionType = when (rawType) {
+                            "Normal" -> "Working"
+                            "Drop Set" -> "Drop Set"
+                            "Super Set" -> "Super Set"
+                            "Warm-up" -> "Warm-up"
+                            else -> "Working"
+                        }
+
+                        put("Type", JSONObject().put("select", JSONObject().put("name", notionType)))
                         put("Weight", JSONObject().put("number", weight))
                         put("Reps", JSONObject().put("number", reps))
                         put("RPE", JSONObject().put("number", rpe))

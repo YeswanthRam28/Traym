@@ -36,14 +36,14 @@ const CARDS: CardData[] = [
     title: 'Enhanced Progress Tracking',
     icon: Trophy,
     desc: 'Shatter your ceilings. Now with a hyper-accurate Progress tab that instantly graphs your absolute 1RMs, relative volume limits, and linear progression coefficients.',
-    tag: 'PR_INDEX_v3.2',
+    tag: 'PR_INDEX_v4.0',
   },
   {
     id: 'feed',
     title: 'Community Leaderboard Stalking',
     icon: Users,
-    desc: 'See exactly how the top athletes are lifting. Tap anyone on the community leaderboard to instantly pull up their complete workout log for the day. Learn from the elite.',
-    tag: 'STALK_MODE_v3.2',
+    desc: 'See exactly how the top athletes are lifting. Tap anyone on the community leaderboard to instantly pull up their complete workout log for the day and see what they are listening to.',
+    tag: 'STALK_MODE_v4.0',
   },
   {
     id: 'notion',
@@ -53,11 +53,11 @@ const CARDS: CardData[] = [
     tag: 'BACKUP_PROTOCOL',
   },
   {
-    id: 'sets',
-    title: 'Tap-to-Cycle Set Modes',
-    icon: Layers,
-    desc: 'Just tap the set number to instantly cycle between Normal Sets, Drop Sets, Super Sets, and Warm-ups! The AI engine reads these context tags to accurately measure overload.',
-    tag: 'TACTICAL_SETS_v3.2',
+    id: 'music',
+    title: 'Live Spotify Sync',
+    icon: Activity,
+    desc: 'Seamlessly sync your currently playing track directly to your Home screen and Leaderboard profile. Let the community know what fuels your heavy sets with real-time live status updates.',
+    tag: 'MEDIA_ENGINE_v4.0',
   },
 ];
 

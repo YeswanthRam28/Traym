@@ -247,7 +247,8 @@ class WorkoutSplitViewModel : ViewModel() {
                         weight_kg = s.weight.toFloat(),
                         reps = s.reps,
                         rpe = 8.0f,
-                        rest_seconds = 90
+                        rest_seconds = 90,
+                        set_type = s.setType
                     )
                 }
                 
@@ -318,10 +319,39 @@ class WorkoutSplitViewModel : ViewModel() {
                 planObj.put("days", daysArr)
                 
                 ApiClient.apiService.updateActivePlan(com.gymtracker.network.UpdatePlanRequest(planObj.toString()))
+
+                val activeWorkoutJson = buildActiveWorkoutJson()
+                com.gymtracker.network.CommunityRepository().syncLiveWorkout(activeWorkoutJson)
             } catch (e: Exception) {
                 e.printStackTrace()
             }
         }
+    }
+
+    private fun buildActiveWorkoutJson(): String? {
+        val todayStr = java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.US).format(java.util.Date())
+        val todayDay = _uiState.value.days.find { it.lastLoggedDate == todayStr } ?: return null
+
+        val exercisesArr = org.json.JSONArray()
+        todayDay.exercises.forEach { ex ->
+            val completedSets = ex.actualSets.filter { it.isCompleted }
+            if (completedSets.isNotEmpty()) {
+                val exObj = org.json.JSONObject()
+                exObj.put("title", ex.name)
+                
+                val setsArr = org.json.JSONArray()
+                completedSets.forEach { s ->
+                    val sObj = org.json.JSONObject()
+                    sObj.put("weight_kg", s.weight)
+                    sObj.put("reps", s.reps)
+                    setsArr.put(sObj)
+                }
+                exObj.put("sets", setsArr)
+                exercisesArr.put(exObj)
+            }
+        }
+
+        return if (exercisesArr.length() > 0) exercisesArr.toString() else null
     }
 
     fun loadHistory() {
@@ -408,7 +438,7 @@ class WorkoutSplitViewModel : ViewModel() {
                             
                             exercisesList.add(
                                 PlannedExercise(
-                                    name = exObj.optString("name"),
+                                    name = cleanLegacyName(exObj.optString("name")),
                                     sets = sets,
                                     reps = exObj.optInt("reps"),
                                     pr = exObj.optDouble("pr", 0.0),
@@ -427,12 +457,38 @@ class WorkoutSplitViewModel : ViewModel() {
         return if (list.isEmpty()) getDefaultSplit() else list
     }
 
+    private fun cleanLegacyName(oldName: String): String {
+        val n = oldName.trim()
+        if (n.contains("Overhand / Neutral Pull-up", ignoreCase = true)) return "Pull-up"
+        if (n.contains("Neutral / Overhand Lat Pulldown", ignoreCase = true)) return "Lat Pulldown"
+        if (n.contains("Seated Cable Row /", ignoreCase = true)) return "Seated Cable Row"
+        if (n.contains("Incline DB Row /", ignoreCase = true)) return "Incline DB Row"
+        if (n.contains("Butterfly", ignoreCase = true)) return "Butterfly (Pec-deck)"
+        if (n.contains("Lateral Raise /", ignoreCase = true)) return "Lateral Raise"
+        if (n.contains("Push-up Plus /", ignoreCase = true)) return "Push-up Plus"
+        if (n.contains("Leg Press /", ignoreCase = true)) return "Leg Press"
+        if (n.contains("Lying Leg Curl /", ignoreCase = true)) return "Lying Leg Curl"
+        if (n.contains("Standing Calf Raise /", ignoreCase = true)) return "Standing Calf Raise"
+        if (n.contains("Hip Abduction", ignoreCase = true)) return "Hip Abduction"
+        if (n.contains("Adductor", ignoreCase = true)) return "Adductor"
+        if (n.contains("Tibialis Raise", ignoreCase = true)) return "Tibialis Raise"
+        if (n.contains("Straight-arm Pulldown /", ignoreCase = true)) return "Straight-arm Pulldown"
+        if (n.contains("Hammer Curl /", ignoreCase = true)) return "Hammer Curl"
+        if (n.contains("Reverse Curl /", ignoreCase = true)) return "Reverse Curl"
+        if (n.contains("Incline Reverse Fly /", ignoreCase = true)) return "Incline Reverse Fly"
+        if (n.contains("Incline Dumbbell Curl /", ignoreCase = true)) return "Incline Dumbbell Curl"
+        if (n.contains("Machine Shoulder Press /", ignoreCase = true)) return "Machine Shoulder Press"
+        if (n.contains("Upright Row /", ignoreCase = true)) return "Upright Row"
+        
+        return n.substringBefore(" /").trim()
+    }
+
     private fun getDefaultSplit(): List<WorkoutDay> {
         return listOf(
             WorkoutDay("MON", "PULL A (BACK & REAR DELTS)", listOf(
-                PlannedExercise("Overhand / Neutral Pull-up", 3, 12),
-                PlannedExercise("Seated Cable Row", 3, 15),
-                PlannedExercise("Neutral / Overhand Lat Pulldown", 3, 15),
+                PlannedExercise("Pull-up", 3, 12),
+                PlannedExercise("Seated Cable Row (Neutral Grip)", 3, 15),
+                PlannedExercise("Lat Pulldown (Neutral Grip)", 3, 15),
                 PlannedExercise("Incline DB Row (Neutral / Semi-pronated)", 3, 12),
                 PlannedExercise("Face Pull", 3, 15),
                 PlannedExercise("Machine Reverse Delt Fly", 3, 15),
@@ -440,55 +496,54 @@ class WorkoutSplitViewModel : ViewModel() {
             )),
             WorkoutDay("TUE", "PUSH A (CHEST & SHOULDERS)", listOf(
                 PlannedExercise("Push-up", 3, 15),
-                PlannedExercise("Flat Barbell / DB Bench Press", 3, 15),
-                PlannedExercise("Incline DB / Barbell Press", 3, 12),
-                PlannedExercise("Pec Deck / Incline DB Fly / Flat DB Fly", 3, 15),
-                PlannedExercise("DB Shoulder Press", 3, 15),
-                PlannedExercise("Seated DB Lateral Raise / Single-arm Cable Lateral Raise", 3, 15),
+                PlannedExercise("Bench Press", 3, 15),
+                PlannedExercise("Incline Dumbbell Press", 3, 12),
+                PlannedExercise("Butterfly (Pec-deck)", 3, 15),
+                PlannedExercise("Dumbbell Shoulder Press", 3, 15),
+                PlannedExercise("Lateral Raise", 3, 15),
                 PlannedExercise("Push-up Plus", 3, 20)
             )),
             WorkoutDay("WED", "LEGS", listOf(
-                PlannedExercise("Smith Machine / Barbell / DB Goblet Squat", 3, 12),
+                PlannedExercise("Weighted Squat", 3, 12),
                 PlannedExercise("Leg Press", 3, 15),
                 PlannedExercise("Lying Leg Curl", 3, 15),
-                PlannedExercise("45° Hyperextension / Back Extension", 3, 15),
+                PlannedExercise("Hip Thrust (Barbell)", 3, 15),
                 PlannedExercise("Leg Extension", 3, 15),
-                PlannedExercise("Bulgarian Split Squat / Walking Lunges", 3, 12),
-                PlannedExercise("Standing / Seated Machine Calf Raise", 3, 20),
-                PlannedExercise("Hip Abduction Machine / Cable Hip Abduction", 3, 20),
-                PlannedExercise("Adductor Machine", 3, 20),
+                PlannedExercise("Bulgarian Split Squat", 3, 12),
+                PlannedExercise("Standing Calf Raise", 3, 20),
+                PlannedExercise("Hip Abduction", 3, 20),
+                PlannedExercise("Adductor", 3, 20),
                 PlannedExercise("Tibialis Raise", 3, 20)
             )),
             WorkoutDay("THU", "PULL B (BACK & BICEPS)", listOf(
-                PlannedExercise("Neutral / Underhand Chin-up", 3, 12),
-                PlannedExercise("Single-arm DB Row", 3, 15),
-                PlannedExercise("Straight-arm Rope Pulldown", 3, 15),
+                PlannedExercise("Chin-up", 3, 12),
+                PlannedExercise("Dumbbell Row", 3, 15),
+                PlannedExercise("Straight-arm Pulldown", 3, 15),
                 PlannedExercise("Hammer Curl", 3, 15),
                 PlannedExercise("Reverse Curl", 3, 15),
-                PlannedExercise("Incline DB Rear Delt Fly", 3, 15),
-                PlannedExercise("Incline DB Curl (Supinated)", 3, 15)
+                PlannedExercise("Incline Reverse Fly", 3, 15),
+                PlannedExercise("Incline Dumbbell Curl", 3, 15)
             )),
             WorkoutDay("FRI", "PUSH B (CHEST & SHOULDERS)", listOf(
-                PlannedExercise("Chest-Focused Dips", 3, 15),
-                PlannedExercise("Close-Grip / Neutral-Grip Bench Press", 3, 15),
-                PlannedExercise("DB Fly (Flat or Incline Bench)", 3, 15),
-                PlannedExercise("Standing Overhead DB / Barbell Press", 3, 12),
+                PlannedExercise("Dips", 3, 15),
+                PlannedExercise("Close-Grip Bench Press", 3, 15),
+                PlannedExercise("Dumbbell Fly", 3, 15),
                 PlannedExercise("Machine Shoulder Press", 3, 15),
-                PlannedExercise("Upright Row (Cable / Barbell)", 3, 15),
-                PlannedExercise("Overhead Tricep Extension (Cable / EZ-bar)", 3, 15),
-                PlannedExercise("Serratus Punch (Cable, Single Side)", 3, 15),
+                PlannedExercise("Upright Row", 3, 15),
+                PlannedExercise("Triceps Extension", 3, 15),
+                PlannedExercise("Serratus Punch", 3, 15),
                 PlannedExercise("Neck Flexion", 3, 20),
                 PlannedExercise("Neck Extension", 3, 20)
             )),
             WorkoutDay("SAT", "CARDIO + CORE", listOf(
                 PlannedExercise("Run", 1, 10),
-                PlannedExercise("Walk/Rest", 1, 3),
+                PlannedExercise("Walk", 1, 3),
                 PlannedExercise("Run", 1, 15),
                 PlannedExercise("Incline Walk", 1, 10),
                 PlannedExercise("Side Plank", 3, 1),
                 PlannedExercise("Leg Raise", 3, 20),
                 PlannedExercise("Hollow Body Hold", 3, 40),
-                PlannedExercise("Cable Woodchop / Pallof Press", 3, 15)
+                PlannedExercise("Pallof Press", 3, 15)
             )),
             WorkoutDay("SUN", "REST", emptyList())
         )

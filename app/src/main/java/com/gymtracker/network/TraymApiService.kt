@@ -87,7 +87,8 @@ data class SetLog(
     val weight_kg: Float?,
     val reps: Int?,
     val rpe: Float?,
-    val rest_seconds: Int?
+    val rest_seconds: Int?,
+    val set_type: String = "Normal"
 )
 
 data class LogSetsResponse(val logged: Int)

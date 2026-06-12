@@ -389,6 +389,7 @@ class LocalTraymApiService : TraymApiService {
                 put("reps", set.reps ?: 0)
                 put("rpe", set.rpe?.toDouble() ?: 8.0)
                 put("rest_seconds", set.rest_seconds ?: 90)
+                put("set_type", set.set_type)
             }
             sets.put(setObj)
         }
@@ -518,6 +519,7 @@ class LocalTraymApiService : TraymApiService {
                             put("reps", s.optInt("reps", 0))
                             put("rpe", s.optDouble("rpe", 8.0))
                             put("rest_seconds", s.optInt("rest_seconds", 90))
+                            put("set_type", s.optString("set_type", "Normal"))
                         }
                         setsArray.put(setObj)
                     }
@@ -620,6 +622,7 @@ class LocalTraymApiService : TraymApiService {
                 put("reps", s.reps ?: 0)
                 put("rpe", s.rpe?.toDouble() ?: 8.0)
                 put("rest_seconds", s.rest_seconds ?: 90)
+                put("set_type", s.set_type)
                 val existingPageId = oldSetsMap[s.set_number]
                 if (existingPageId != null) {
                     put("notion_page_id", existingPageId)
@@ -722,17 +725,17 @@ class LocalTraymApiService : TraymApiService {
             }
         }
 
-        // 2. Add the last 4 recent PRs (that aren't already added)
+        // 2. Add all other PRs
         recentPrEvents.reverse() // Most recent first
-        var recentCount = 0
         for ((ex, weight) in recentPrEvents) {
-            if (recentCount >= 4) break
             if (!addedExercises.contains(ex)) {
                 list.add(PrResponse(exercise = ex, weight_kg = weight.toFloat()))
                 addedExercises.add(ex)
-                recentCount++
             }
         }
+
+        // Sort by weight descending
+        list.sortByDescending { it.weight_kg }
 
         return Response.success(list)
     }
