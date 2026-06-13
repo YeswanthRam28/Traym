@@ -841,14 +841,14 @@ class LocalTraymApiService : TraymApiService {
               "exercises": [
                 {"name": "Weighted Squat", "sets": 3, "reps": 12},
                 {"name": "Leg Press", "sets": 3, "reps": 15},
-                {"name": "Lying Leg Curl", "sets": 3, "reps": 15},
-                {"name": "45° Hyperextension / Back Extension", "sets": 3, "reps": 15},
-                {"name": "Leg Extension", "sets": 3, "reps": 15},
-                {"name": "Bulgarian Split Squat / Walking Lunges", "sets": 3, "reps": 12},
-                {"name": "Standing / Seated Machine Calf Raise", "sets": 3, "reps": 20},
-                {"name": "Hip Abduction Machine / Cable Hip Abduction", "sets": 3, "reps": 20},
-                {"name": "Adductor Machine", "sets": 3, "reps": 20},
-                {"name": "Tibialis Raise", "sets": 3, "reps": 20}
+                {"name": "Lying Leg Curls", "sets": 3, "reps": 15},
+                {"name": "Barbell Hip Thrust", "sets": 3, "reps": 15},
+                {"name": "Leg Extensions", "sets": 3, "reps": 15},
+                {"name": "Split Squats", "sets": 3, "reps": 12},
+                {"name": "Standing Calf Raises", "sets": 3, "reps": 20},
+                {"name": "Thigh Abductor", "sets": 3, "reps": 20},
+                {"name": "Thigh Adductor", "sets": 3, "reps": 20},
+                {"name": "Tibialis  Raise", "sets": 3, "reps": 20}
               ]
             },
             {
@@ -857,7 +857,7 @@ class LocalTraymApiService : TraymApiService {
               "exercises": [
                 {"name": "Neutral / Underhand Chin-up", "sets": 3, "reps": 12},
                 {"name": "Single-arm DB Row", "sets": 3, "reps": 15},
-                {"name": "Straight-arm Rope Pulldown", "sets": 3, "reps": 15},
+                {"name": "Straight-Arm Pulldown", "sets": 3, "reps": 15},
                 {"name": "Hammer Curl", "sets": 3, "reps": 15},
                 {"name": "Reverse Curl", "sets": 3, "reps": 15},
                 {"name": "Incline DB Rear Delt Fly", "sets": 3, "reps": 15},
@@ -868,14 +868,13 @@ class LocalTraymApiService : TraymApiService {
               "day": "FRI",
               "title": "PUSH B (CHEST & SHOULDERS)",
               "exercises": [
-                {"name": "Chest-Focused Dips", "sets": 3, "reps": 15},
-                {"name": "Close-Grip / Neutral-Grip Bench Press", "sets": 3, "reps": 15},
-                {"name": "DB Fly (Flat or Incline Bench)", "sets": 3, "reps": 15},
-                {"name": "Standing Overhead DB / Barbell Press", "sets": 3, "reps": 12},
+                {"name": "Dips", "sets": 3, "reps": 15},
+                {"name": "Close-Grip Bench Press", "sets": 3, "reps": 15},
+                {"name": "Dumbbell Fly", "sets": 3, "reps": 15},
                 {"name": "Machine Shoulder Press", "sets": 3, "reps": 15},
-                {"name": "Upright Row (Cable / Barbell)", "sets": 3, "reps": 15},
-                {"name": "Overhead Tricep Extension (Cable / EZ-bar)", "sets": 3, "reps": 15},
-                {"name": "Serratus Punch (Cable, Single Side)", "sets": 3, "reps": 15},
+                {"name": "Upright Row", "sets": 3, "reps": 15},
+                {"name": "Tricep Extension", "sets": 3, "reps": 15},
+                {"name": "Serratus Punch", "sets": 3, "reps": 15},
                 {"name": "Neck Flexion", "sets": 3, "reps": 20},
                 {"name": "Neck Extension", "sets": 3, "reps": 20}
               ]

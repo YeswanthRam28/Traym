@@ -487,9 +487,9 @@ class WorkoutSplitViewModel : ViewModel() {
         return listOf(
             WorkoutDay("MON", "PULL A (BACK & REAR DELTS)", listOf(
                 PlannedExercise("Pull-up", 3, 12),
-                PlannedExercise("Seated Cable Row (Neutral Grip)", 3, 15),
+                PlannedExercise("Seated Cable Row", 3, 15),
                 PlannedExercise("Lat Pulldown (Neutral Grip)", 3, 15),
-                PlannedExercise("Incline DB Row (Neutral / Semi-pronated)", 3, 12),
+                PlannedExercise("Incline DB Row", 3, 12),
                 PlannedExercise("Face Pull", 3, 15),
                 PlannedExercise("Machine Reverse Delt Fly", 3, 15),
                 PlannedExercise("Dumbbell Shrug", 3, 15)
@@ -518,7 +518,7 @@ class WorkoutSplitViewModel : ViewModel() {
             WorkoutDay("THU", "PULL B (BACK & BICEPS)", listOf(
                 PlannedExercise("Chin-up", 3, 12),
                 PlannedExercise("Dumbbell Row", 3, 15),
-                PlannedExercise("Straight-arm Pulldown", 3, 15),
+                PlannedExercise("Straight-Arm Pulldown", 3, 15),
                 PlannedExercise("Hammer Curl", 3, 15),
                 PlannedExercise("Reverse Curl", 3, 15),
                 PlannedExercise("Incline Reverse Fly", 3, 15),
