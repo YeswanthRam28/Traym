@@ -486,64 +486,51 @@ class WorkoutSplitViewModel : ViewModel() {
     private fun getDefaultSplit(): List<WorkoutDay> {
         return listOf(
             WorkoutDay("MON", "PULL A (BACK & REAR DELTS)", listOf(
-                PlannedExercise("Pull-up", 3, 12),
-                PlannedExercise("Seated Cable Row", 3, 15),
-                PlannedExercise("Lat Pulldown (Neutral Grip)", 3, 15),
-                PlannedExercise("Incline DB Row", 3, 12),
-                PlannedExercise("Face Pull", 3, 15),
-                PlannedExercise("Machine Reverse Delt Fly", 3, 15),
+                PlannedExercise("Wide-Grip Rear Pull-Up", 3, 10),
+                PlannedExercise("Seated Cable Rows", 3, 12),
+                PlannedExercise("Wide-Grip Lat Pulldown", 3, 12),
+                PlannedExercise("Dumbbell Incline Row", 3, 12),
+                PlannedExercise("Reverse Flyes", 3, 15),
                 PlannedExercise("Dumbbell Shrug", 3, 15)
             )),
             WorkoutDay("TUE", "PUSH A (CHEST & SHOULDERS)", listOf(
-                PlannedExercise("Push-up", 3, 15),
-                PlannedExercise("Bench Press", 3, 15),
-                PlannedExercise("Incline Dumbbell Press", 3, 12),
-                PlannedExercise("Butterfly (Pec-deck)", 3, 15),
-                PlannedExercise("Dumbbell Shoulder Press", 3, 15),
-                PlannedExercise("Lateral Raise", 3, 15),
-                PlannedExercise("Push-up Plus", 3, 20)
+                PlannedExercise("Push-Up Wide", 3, 15),
+                PlannedExercise("Barbell Bench Press - Medium Grip", 3, 10),
+                PlannedExercise("Incline Dumbbell Press", 3, 10),
+                PlannedExercise("Butterfly", 3, 15),
+                PlannedExercise("Dumbbell Shoulder Press", 3, 12),
+                PlannedExercise("Side Lateral Raise", 3, 15),
+                PlannedExercise("Triceps Pushdown", 3, 15)
             )),
             WorkoutDay("WED", "LEGS", listOf(
-                PlannedExercise("Weighted Squat", 3, 12),
-                PlannedExercise("Leg Press", 3, 15),
-                PlannedExercise("Lying Leg Curl", 3, 15),
-                PlannedExercise("Hip Thrust (Barbell)", 3, 15),
-                PlannedExercise("Leg Extension", 3, 15),
-                PlannedExercise("Bulgarian Split Squat", 3, 12),
-                PlannedExercise("Standing Calf Raise", 3, 20),
-                PlannedExercise("Hip Abduction", 3, 20),
-                PlannedExercise("Adductor", 3, 20),
-                PlannedExercise("Tibialis Raise", 3, 20)
+                PlannedExercise("Weighted Squat", 3, 10),
+                PlannedExercise("Leg Press", 3, 12),
+                PlannedExercise("Lying Leg Curls", 3, 12),
+                PlannedExercise("Leg Extensions", 3, 15),
+                PlannedExercise("Split Squats", 3, 12),
+                PlannedExercise("Standing Calf Raises", 3, 15)
             )),
             WorkoutDay("THU", "PULL B (BACK & BICEPS)", listOf(
-                PlannedExercise("Chin-up", 3, 12),
-                PlannedExercise("Dumbbell Row", 3, 15),
-                PlannedExercise("Straight-Arm Pulldown", 3, 15),
-                PlannedExercise("Hammer Curl", 3, 15),
-                PlannedExercise("Reverse Curl", 3, 15),
-                PlannedExercise("Incline Reverse Fly", 3, 15),
-                PlannedExercise("Incline Dumbbell Curl", 3, 15)
+                PlannedExercise("Chin-Up", 3, 10),
+                PlannedExercise("Dumbbell Row", 3, 12),
+                PlannedExercise("Hammer Curls", 3, 12),
+                PlannedExercise("Wide-Grip Pulldown Behind The Neck", 3, 12),
+                PlannedExercise("Standing Dumbbell Reverse Curl", 3, 12),
+                PlannedExercise("Reverse Flyes", 3, 15),
+                PlannedExercise("Incline Dumbbell Curl", 3, 12)
             )),
             WorkoutDay("FRI", "PUSH B (CHEST & SHOULDERS)", listOf(
-                PlannedExercise("Dips", 3, 15),
-                PlannedExercise("Close-Grip Bench Press", 3, 15),
-                PlannedExercise("Dumbbell Fly", 3, 15),
-                PlannedExercise("Machine Shoulder Press", 3, 15),
-                PlannedExercise("Upright Row", 3, 15),
-                PlannedExercise("Triceps Extension", 3, 15),
-                PlannedExercise("Serratus Punch", 3, 15),
-                PlannedExercise("Neck Flexion", 3, 20),
-                PlannedExercise("Neck Extension", 3, 20)
+                PlannedExercise("Dips - Chest Version", 3, 12),
+                PlannedExercise("Decline Dumbbell Bench Press", 3, 10),
+                PlannedExercise("Dumbbell Flyes", 3, 15),
+                PlannedExercise("Standing Dumbbell Upright Row", 3, 12),
+                PlannedExercise("Triceps Pushdown", 3, 15)
             )),
             WorkoutDay("SAT", "CARDIO + CORE", listOf(
-                PlannedExercise("Run", 1, 10),
-                PlannedExercise("Walk", 1, 3),
-                PlannedExercise("Run", 1, 15),
-                PlannedExercise("Incline Walk", 1, 10),
-                PlannedExercise("Side Plank", 3, 1),
-                PlannedExercise("Leg Raise", 3, 20),
-                PlannedExercise("Hollow Body Hold", 3, 40),
-                PlannedExercise("Pallof Press", 3, 15)
+                PlannedExercise("Running", 1, 15),
+                PlannedExercise("Plank", 3, 60),
+                PlannedExercise("Flat Bench Lying Leg Raise", 3, 15),
+                PlannedExercise("Crunch", 3, 20)
             )),
             WorkoutDay("SUN", "REST", emptyList())
         )

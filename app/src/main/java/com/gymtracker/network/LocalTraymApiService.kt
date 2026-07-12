@@ -21,20 +21,14 @@ class LocalTraymApiService : TraymApiService {
 
     private fun getCleanMuscleGroup(bodyPart: String, target: String): String {
         val bp = bodyPart.lowercase()
-        val tg = target.lowercase()
-        return when {
-            bp == "chest" -> "Chest"
-            bp == "back" -> "Back"
-            bp == "shoulders" -> "Shoulders"
-            bp == "cardio" -> "Cardio"
-            tg == "biceps" -> "Biceps"
-            tg == "triceps" -> "Triceps"
-            bp == "upper arms" && tg.contains("bicep") -> "Biceps"
-            bp == "upper arms" && tg.contains("tricep") -> "Triceps"
-            bp == "upper arms" -> "Arms"
-            bp == "lower arms" -> "Arms"
-            bp == "waist" || tg == "abs" -> "Core"
-            bp == "upper legs" || bp == "lower legs" || tg == "quads" || tg == "hamstrings" || tg == "glutes" || tg == "calves" -> "Legs"
+        return when (bp) {
+            "chest" -> "Chest"
+            "middle back", "lats", "lower back", "traps" -> "Back"
+            "shoulders", "neck" -> "Shoulders"
+            "biceps", "triceps", "forearms" -> "Arms"
+            "quadriceps", "hamstrings", "glutes", "calves", "adductors", "abductors" -> "Legs"
+            "abdominals" -> "Core"
+            "cardio" -> "Cardio"
             else -> "Full Body"
         }
     }
@@ -42,12 +36,14 @@ class LocalTraymApiService : TraymApiService {
     private fun getCleanEquipment(equipment: String): String {
         val eq = equipment.lowercase()
         return when {
-            eq.contains("body weight") || eq.contains("bodyweight") -> "Bodyweight"
-            eq.contains("barbell") -> "Barbell"
+            eq.contains("body") || eq == "body only" -> "Bodyweight"
+            eq.contains("barbell") || eq.contains("e-z") -> "Barbell"
             eq.contains("dumbbell") -> "Dumbbell"
             eq.contains("cable") -> "Cable"
             eq.contains("machine") || eq.contains("leverage") -> "Machine"
-            else -> "Bodyweight"
+            eq.contains("kettlebell") -> "Kettlebell"
+            eq.contains("band") -> "Band"
+            else -> "Other"
         }
     }
 
@@ -661,6 +657,24 @@ class LocalTraymApiService : TraymApiService {
         val list = mutableListOf<WorkoutSummaryResponse>()
         for (i in 0 until workouts.length()) {
             val w = workouts.getJSONObject(i)
+            
+            val setsArray = w.optJSONArray("sets") ?: JSONArray()
+            val parsedSets = mutableListOf<SetLog>()
+            for (j in 0 until setsArray.length()) {
+                val s = setsArray.getJSONObject(j)
+                parsedSets.add(
+                    SetLog(
+                        exercise_name = w.optString("title"),
+                        set_number = s.optInt("set_number"),
+                        weight_kg = s.optDouble("weight_kg").toFloat(),
+                        reps = s.optInt("reps"),
+                        rpe = s.optDouble("rpe").toFloat(),
+                        rest_seconds = s.optInt("rest_seconds"),
+                        set_type = s.optString("set_type", "Normal")
+                    )
+                )
+            }
+            
             list.add(
                 WorkoutSummaryResponse(
                     id = w.optString("id"),
@@ -670,7 +684,8 @@ class LocalTraymApiService : TraymApiService {
                     total_volume_kg = w.optDouble("total_volume_kg", 0.0).toFloat(),
                     duration_seconds = w.optInt("duration_seconds", 0),
                     total_sets = w.optInt("total_sets", 0),
-                    total_reps = w.optInt("total_reps", 0)
+                    total_reps = w.optInt("total_reps", 0),
+                    detailed_sets = parsedSets
                 )
             )
         }
@@ -806,19 +821,18 @@ class LocalTraymApiService : TraymApiService {
     private fun saveDefaultPlan(philosophy: String): ActivePlanResponse {
         val defaultPlanJson = """
         {
-          "split": "Custom Split",
+          "split": "Custom AI Plan",
           "week_number": 1,
           "days": [
             {
               "day": "MON",
               "title": "PULL A (BACK & REAR DELTS)",
               "exercises": [
-                {"name": "Overhand / Neutral Pull-up", "sets": 3, "reps": 12},
-                {"name": "Seated Cable Row", "sets": 3, "reps": 15},
-                {"name": "Neutral / Overhand Lat Pulldown", "sets": 3, "reps": 15},
-                {"name": "Incline DB Row (Neutral / Semi-pronated)", "sets": 3, "reps": 12},
-                {"name": "Face Pull", "sets": 3, "reps": 15},
-                {"name": "Machine Reverse Delt Fly", "sets": 3, "reps": 15},
+                {"name": "Wide-Grip Rear Pull-Up", "sets": 3, "reps": 10},
+                {"name": "Seated Cable Rows", "sets": 3, "reps": 12},
+                {"name": "Wide-Grip Lat Pulldown", "sets": 3, "reps": 12},
+                {"name": "Dumbbell Incline Row", "sets": 3, "reps": 12},
+                {"name": "Reverse Flyes", "sets": 3, "reps": 15},
                 {"name": "Dumbbell Shrug", "sets": 3, "reps": 15}
               ]
             },
@@ -826,71 +840,59 @@ class LocalTraymApiService : TraymApiService {
               "day": "TUE",
               "title": "PUSH A (CHEST & SHOULDERS)",
               "exercises": [
-                {"name": "Push-up", "sets": 3, "reps": 15},
-                {"name": "Flat Barbell / DB Bench Press", "sets": 3, "reps": 15},
-                {"name": "Incline DB / Barbell Press", "sets": 3, "reps": 12},
-                {"name": "Pec Deck / Incline DB Fly / Flat DB Fly", "sets": 3, "reps": 15},
-                {"name": "DB Shoulder Press", "sets": 3, "reps": 15},
-                {"name": "Seated DB Lateral Raise / Single-arm Cable Lateral Raise", "sets": 3, "reps": 15},
-                {"name": "Push-up Plus", "sets": 3, "reps": 20}
+                {"name": "Push-Up Wide", "sets": 3, "reps": 15},
+                {"name": "Barbell Bench Press - Medium Grip", "sets": 3, "reps": 10},
+                {"name": "Incline Dumbbell Press", "sets": 3, "reps": 10},
+                {"name": "Butterfly", "sets": 3, "reps": 15},
+                {"name": "Dumbbell Shoulder Press", "sets": 3, "reps": 12},
+                {"name": "Side Lateral Raise", "sets": 3, "reps": 15},
+                {"name": "Triceps Pushdown", "sets": 3, "reps": 15}
               ]
             },
             {
               "day": "WED",
               "title": "LEGS",
               "exercises": [
-                {"name": "Weighted Squat", "sets": 3, "reps": 12},
-                {"name": "Leg Press", "sets": 3, "reps": 15},
-                {"name": "Lying Leg Curls", "sets": 3, "reps": 15},
-                {"name": "Barbell Hip Thrust", "sets": 3, "reps": 15},
+                {"name": "Weighted Squat", "sets": 3, "reps": 10},
+                {"name": "Leg Press", "sets": 3, "reps": 12},
+                {"name": "Lying Leg Curls", "sets": 3, "reps": 12},
                 {"name": "Leg Extensions", "sets": 3, "reps": 15},
                 {"name": "Split Squats", "sets": 3, "reps": 12},
-                {"name": "Standing Calf Raises", "sets": 3, "reps": 20},
-                {"name": "Thigh Abductor", "sets": 3, "reps": 20},
-                {"name": "Thigh Adductor", "sets": 3, "reps": 20},
-                {"name": "Tibialis  Raise", "sets": 3, "reps": 20}
+                {"name": "Standing Calf Raises", "sets": 3, "reps": 15}
               ]
             },
             {
               "day": "THU",
               "title": "PULL B (BACK & BICEPS)",
               "exercises": [
-                {"name": "Neutral / Underhand Chin-up", "sets": 3, "reps": 12},
-                {"name": "Single-arm DB Row", "sets": 3, "reps": 15},
-                {"name": "Straight-Arm Pulldown", "sets": 3, "reps": 15},
-                {"name": "Hammer Curl", "sets": 3, "reps": 15},
-                {"name": "Reverse Curl", "sets": 3, "reps": 15},
-                {"name": "Incline DB Rear Delt Fly", "sets": 3, "reps": 15},
-                {"name": "Incline DB Curl (Supinated)", "sets": 3, "reps": 15}
+                {"name": "Chin-Up", "sets": 3, "reps": 10},
+                {"name": "Dumbbell Row", "sets": 3, "reps": 12},
+                {"name": "Hammer Curls", "sets": 3, "reps": 12},
+                {"name": "Wide-Grip Pulldown Behind The Neck", "sets": 3, "reps": 12},
+                {"name": "Standing Dumbbell Reverse Curl", "sets": 3, "reps": 12},
+                {"name": "Reverse Flyes", "sets": 3, "reps": 15},
+                {"name": "Incline Dumbbell Curl", "sets": 3, "reps": 12}
               ]
             },
             {
               "day": "FRI",
               "title": "PUSH B (CHEST & SHOULDERS)",
               "exercises": [
-                {"name": "Dips", "sets": 3, "reps": 15},
-                {"name": "Close-Grip Bench Press", "sets": 3, "reps": 15},
-                {"name": "Dumbbell Fly", "sets": 3, "reps": 15},
-                {"name": "Machine Shoulder Press", "sets": 3, "reps": 15},
-                {"name": "Upright Row", "sets": 3, "reps": 15},
-                {"name": "Tricep Extension", "sets": 3, "reps": 15},
-                {"name": "Serratus Punch", "sets": 3, "reps": 15},
-                {"name": "Neck Flexion", "sets": 3, "reps": 20},
-                {"name": "Neck Extension", "sets": 3, "reps": 20}
+                {"name": "Dips - Chest Version", "sets": 3, "reps": 12},
+                {"name": "Decline Dumbbell Bench Press", "sets": 3, "reps": 10},
+                {"name": "Dumbbell Flyes", "sets": 3, "reps": 15},
+                {"name": "Standing Dumbbell Upright Row", "sets": 3, "reps": 12},
+                {"name": "Triceps Pushdown", "sets": 3, "reps": 15}
               ]
             },
             {
               "day": "SAT",
               "title": "CARDIO + CORE",
               "exercises": [
-                {"name": "Run", "sets": 1, "reps": 10},
-                {"name": "Walk/Rest", "sets": 1, "reps": 3},
-                {"name": "Run", "sets": 1, "reps": 15},
-                {"name": "Incline Walk", "sets": 1, "reps": 10},
-                {"name": "Side Plank", "sets": 3, "reps": 1},
-                {"name": "Leg Raise", "sets": 3, "reps": 20},
-                {"name": "Hollow Body Hold", "sets": 3, "reps": 40},
-                {"name": "Cable Woodchop / Pallof Press", "sets": 3, "reps": 15}
+                {"name": "Running", "sets": 1, "reps": 15},
+                {"name": "Plank", "sets": 3, "reps": 60},
+                {"name": "Flat Bench Lying Leg Raise", "sets": 3, "reps": 15},
+                {"name": "Crunch", "sets": 3, "reps": 20}
               ]
             },
             {

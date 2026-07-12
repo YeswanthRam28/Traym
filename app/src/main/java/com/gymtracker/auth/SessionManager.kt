@@ -19,6 +19,7 @@ object SessionManager {
     private const val KEY_NOTION_TOKEN = "notion_token"
     private const val KEY_NOTION_DATABASE_ID = "notion_database_id"
     private const val KEY_NOTION_SYNC_ENABLED = "notion_sync_enabled"
+    private const val KEY_OPENROUTER_API_KEY = "openrouter_api_key"
 
     private lateinit var prefs: SharedPreferences
 
@@ -44,6 +45,18 @@ object SessionManager {
                 prefs.edit().putBoolean(KEY_ONBOARDING_COMPLETE, value).apply()
             }
         }
+        
+    var openRouterApiKey: String? = null
+        set(value) {
+            field = value
+            if (::prefs.isInitialized) {
+                if (value != null) {
+                    prefs.edit().putString(KEY_OPENROUTER_API_KEY, value).apply()
+                } else {
+                    prefs.edit().remove(KEY_OPENROUTER_API_KEY).apply()
+                }
+            }
+        }
 
     lateinit var appContext: Context
 
@@ -58,6 +71,7 @@ object SessionManager {
         _isLoggedIn.value = loggedIn
         
         onboardingComplete = prefs.getBoolean(KEY_ONBOARDING_COMPLETE, false)
+        openRouterApiKey = prefs.getString(KEY_OPENROUTER_API_KEY, null)
     }
 
     fun setLoggedIn(loggedIn: Boolean, token: String? = null, userName: String? = null, userId: String? = null, profilePicUrl: String? = null, onboarded: Boolean = true) {

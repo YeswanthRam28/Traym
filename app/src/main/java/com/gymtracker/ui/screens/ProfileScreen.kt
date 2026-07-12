@@ -73,10 +73,12 @@ fun ProfileScreen(
     var showNotionDialog by remember { mutableStateOf(false) }
     var showConnectedAppsDialog by remember { mutableStateOf(false) }
     var showAccountDetailsDialog by remember { mutableStateOf(false) }
+    var showAiCoachDialog by remember { mutableStateOf(false) }
 
     val settingsItems = listOf(
         "Account Details", "Training Preferences", "Connected Apps", 
-        "Data Export", "Notifications", "Clear Local Data"
+        "Data Export", "Notifications", "AI Coach Settings", "Clear Local Data",
+        "Join WhatsApp Community", "Join Discord Server", "Contribute on GitHub"
     )
 
     Scaffold(
@@ -207,6 +209,18 @@ fun ProfileScreen(
                                     }
                                     "Account Details" -> {
                                         showAccountDetailsDialog = true
+                                    }
+                                    "AI Coach Settings" -> {
+                                        showAiCoachDialog = true
+                                    }
+                                    "Join WhatsApp Community" -> {
+                                        context.startActivity(android.content.Intent(android.content.Intent.ACTION_VIEW, android.net.Uri.parse("https://chat.whatsapp.com/I8ufFZFMWy38dTdQW6ZlJh")))
+                                    }
+                                    "Join Discord Server" -> {
+                                        context.startActivity(android.content.Intent(android.content.Intent.ACTION_VIEW, android.net.Uri.parse("https://discord.gg/WfZ5cZXpV")))
+                                    }
+                                    "Contribute on GitHub" -> {
+                                        context.startActivity(android.content.Intent(android.content.Intent.ACTION_VIEW, android.net.Uri.parse("https://github.com/YeswanthRam28/Traym.git")))
                                     }
                                     else -> {
                                         Toast.makeText(context, "$item coming soon", Toast.LENGTH_SHORT).show()
@@ -602,6 +616,51 @@ fun ProfileScreen(
             },
             containerColor = AppBlack,
             shape = RoundedCornerShape(16.dp)
+        )
+    }
+
+    if (showAiCoachDialog) {
+        var apiKey by remember { mutableStateOf(SessionManager.openRouterApiKey ?: "") }
+        
+        AlertDialog(
+            onDismissRequest = { showAiCoachDialog = false },
+            title = {
+                Text(text = "AI Coach Settings", style = Typography.titleLarge.copy(color = Acid, fontWeight = FontWeight.Bold))
+            },
+            text = {
+                Column {
+                    Text(text = "Configure your OpenRouter API Key to power the AI Coach.", style = Typography.bodyMedium.copy(color = OffWhite.copy(alpha = 0.8f)))
+                    Spacer(modifier = Modifier.height(16.dp))
+                    OutlinedTextField(
+                        value = apiKey,
+                        onValueChange = { apiKey = it },
+                        label = { Text("OpenRouter API Key") },
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedTextColor = OffWhite,
+                            unfocusedTextColor = OffWhite,
+                            focusedBorderColor = Acid,
+                            unfocusedBorderColor = Muted,
+                            cursorColor = Acid
+                        )
+                    )
+                }
+            },
+            confirmButton = {
+                TextButton(onClick = {
+                    SessionManager.openRouterApiKey = apiKey.trim()
+                    showAiCoachDialog = false
+                    Toast.makeText(context, "API Key saved", Toast.LENGTH_SHORT).show()
+                }) {
+                    Text("SAVE", color = Acid)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showAiCoachDialog = false }) {
+                    Text("CANCEL", color = OffWhite.copy(alpha = 0.6f))
+                }
+            },
+            containerColor = Dim
         )
     }
 }

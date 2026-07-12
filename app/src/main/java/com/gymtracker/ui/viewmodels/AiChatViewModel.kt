@@ -167,7 +167,10 @@ class AiChatViewModel : ViewModel() {
     }
 
     private suspend fun executeChatCompletion(messagesArr: JSONArray): String {
-        val apiKey = com.gymtracker.BuildConfig.OPENROUTER_API_KEY
+        val apiKey = SessionManager.openRouterApiKey
+        if (apiKey.isNullOrEmpty()) {
+            throw Exception("OpenRouter API key is not configured. Please set it in your Profile Settings.")
+        }
         val baseUrl = "https://openrouter.ai/api/v1"
         val modelName = "deepseek/deepseek-chat"
 

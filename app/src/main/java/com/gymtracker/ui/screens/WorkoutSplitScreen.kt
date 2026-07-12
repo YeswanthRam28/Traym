@@ -221,6 +221,34 @@ fun WorkoutSplitScreen(
                                     style = Typography.titleMedium.copy(color = Acid)
                                 )
                             }
+                            
+                            if (!entry.detailed_sets.isNullOrEmpty()) {
+                                Spacer(modifier = Modifier.height(12.dp))
+                                Column(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .background(AppBlack.copy(alpha = 0.3f))
+                                        .padding(12.dp),
+                                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                                ) {
+                                    entry.detailed_sets.forEach { set ->
+                                        Row(
+                                            modifier = Modifier.fillMaxWidth(),
+                                            horizontalArrangement = Arrangement.SpaceBetween,
+                                            verticalAlignment = Alignment.CenterVertically
+                                        ) {
+                                            Text(
+                                                text = "SET ${set.set_number}" + if (set.set_type != "Normal") " (${set.set_type})" else "",
+                                                style = Typography.labelMedium.copy(color = OffWhite.copy(alpha = 0.7f), fontWeight = FontWeight.Bold)
+                                            )
+                                            Text(
+                                                text = "${set.weight_kg ?: 0.0} KG × ${set.reps ?: 0}",
+                                                style = Typography.bodyMedium.copy(color = OffWhite)
+                                            )
+                                        }
+                                    }
+                                }
+                            }
                             if (idx < exerciseHistory.size - 1) {
                                 Divider(color = Muted.copy(alpha = 0.5f), thickness = 0.5.dp, modifier = Modifier.padding(top = 12.dp))
                             }
@@ -335,6 +363,8 @@ fun DayDetailView(
     onSaveExercise: (Int) -> Unit,
     modifier: Modifier = Modifier
 ) {
+    var isEditingDay by remember { mutableStateOf(false) }
+    
     Column(
         modifier = modifier
             .fillMaxSize()
@@ -351,8 +381,15 @@ fun DayDetailView(
                 Text("←", style = Typography.headlineMedium.copy(color = OffWhite))
             }
             Text(text = day.dayName, style = Typography.labelLarge.copy(color = OffWhite.copy(alpha = 0.6f)))
-            TextButton(onClick = onAddExercise) {
-                Text("+ ADD", style = Typography.labelLarge.copy(color = Acid))
+            Row {
+                if (isEditingDay) {
+                    TextButton(onClick = onAddExercise) {
+                        Text("+ ADD", style = Typography.labelLarge.copy(color = Acid))
+                    }
+                }
+                IconButton(onClick = { isEditingDay = !isEditingDay }) {
+                    Text(if (isEditingDay) "DONE" else "EDIT", style = Typography.labelLarge.copy(color = if (isEditingDay) Acid else OffWhite))
+                }
             }
         }
         
@@ -398,11 +435,13 @@ fun DayDetailView(
                             TextButton(onClick = { onSaveExercise(index) }, contentPadding = PaddingValues(horizontal = 8.dp)) {
                                 Text("SAVE", color = Acid, style = Typography.labelMedium.copy(fontWeight = FontWeight.Bold))
                             }
-                            IconButton(onClick = { onRemoveExercise(index) }) {
-                                Text("✕", color = Color.Red)
-                            }
-                            Box(modifier = Modifier.detectReorderAfterLongPress(state).padding(8.dp)) {
-                                Text("☰", style = Typography.headlineMedium.copy(color = Muted))
+                            if (isEditingDay) {
+                                IconButton(onClick = { onRemoveExercise(index) }) {
+                                    Text("✕", color = Color.Red)
+                                }
+                                Box(modifier = Modifier.detectReorderAfterLongPress(state).padding(8.dp)) {
+                                    Text("☰", style = Typography.headlineMedium.copy(color = Muted))
+                                }
                             }
                         }
 

@@ -109,7 +109,8 @@ data class WorkoutSummaryResponse(
     val total_volume_kg: Float?,
     val duration_seconds: Int?,
     val total_sets: Int? = null,
-    val total_reps: Int? = null
+    val total_reps: Int? = null,
+    val detailed_sets: List<SetLog>? = null
 )
 
 data class PrResponse(
