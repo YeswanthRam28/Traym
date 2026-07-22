@@ -222,43 +222,7 @@ fun AiChatScreen(
             
             item { Divider(color = Muted, thickness = 8.dp, modifier = Modifier.padding(vertical = 16.dp)) }
 
-            // --- ALL PRs SECTION ---
-            item {
-                val allPrs by viewModel.allPrs.collectAsState()
-                
-                if (allPrs.isNotEmpty()) {
-                    Column(modifier = Modifier.fillMaxWidth().padding(horizontal = Tokens.PaddingHorizontal)) {
-                        Text(
-                            text = "ALL PRs",
-                            style = Typography.labelLarge.copy(color = OffWhite),
-                            modifier = Modifier.padding(bottom = 16.dp)
-                        )
-                        
-                        allPrs.forEach { pr ->
-                            Row(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(vertical = 8.dp),
-                                horizontalArrangement = Arrangement.SpaceBetween,
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Text(
-                                    text = pr.exercise.uppercase(),
-                                    style = Typography.bodyMedium.copy(color = OffWhite.copy(alpha = 0.8f)),
-                                    modifier = Modifier.weight(1f)
-                                )
-                                Text(
-                                    text = "${pr.weight_kg} KG",
-                                    style = Typography.titleMedium.copy(color = Acid, fontWeight = FontWeight.Bold)
-                                )
-                            }
-                            Divider(color = Muted, thickness = 0.5.dp)
-                        }
-                    }
-                }
-            }
 
-            item { Divider(color = Muted, thickness = 8.dp, modifier = Modifier.padding(vertical = 16.dp)) }
 
             // --- ADVANCED STATISTICS SECTION ---
             item {

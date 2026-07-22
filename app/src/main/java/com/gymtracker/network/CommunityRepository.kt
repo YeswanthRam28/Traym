@@ -86,9 +86,187 @@ class CommunityRepository {
                         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
                     )
                 """)
+
+                stmt.execute("""
+                    CREATE TABLE IF NOT EXISTS user_exercise_logs (
+                        log_id VARCHAR(255) PRIMARY KEY,
+                        user_id VARCHAR(255) NOT NULL,
+                        exercise_name VARCHAR(255) NOT NULL,
+                        workout_title VARCHAR(255),
+                        muscle VARCHAR(255),
+                        equipment VARCHAR(255),
+                        weight_kg FLOAT DEFAULT 0,
+                        reps INT DEFAULT 0,
+                        set_number INT DEFAULT 1,
+                        started_at VARCHAR(255),
+                        synced_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                    )
+                """)
             }
         } catch (e: Exception) {
             e.printStackTrace()
+        }
+    }
+
+    suspend fun syncWorkoutsToCloud(): Result<Int> = withContext(Dispatchers.IO) {
+        try {
+            try { initializeDatabase() } catch (e: Exception) { e.printStackTrace() }
+            val userId = SessionManager.getUserId()
+            if (userId.isEmpty()) return@withContext Result.failure(Exception("User not logged in"))
+
+            val file = java.io.File(SessionManager.appContext.filesDir, "workouts.json")
+            if (!file.exists()) return@withContext Result.success(0)
+
+            val jsonArray = org.json.JSONArray(file.readText())
+            if (jsonArray.length() == 0) return@withContext Result.success(0)
+
+            var count = 0
+            getConnection().use { conn ->
+                val sql = """
+                    INSERT INTO user_exercise_logs (log_id, user_id, exercise_name, workout_title, muscle, equipment, weight_kg, reps, set_number, started_at)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    ON CONFLICT (log_id) 
+                    DO UPDATE SET 
+                        exercise_name = EXCLUDED.exercise_name,
+                        workout_title = EXCLUDED.workout_title,
+                        muscle = EXCLUDED.muscle,
+                        equipment = EXCLUDED.equipment,
+                        weight_kg = EXCLUDED.weight_kg,
+                        reps = EXCLUDED.reps,
+                        set_number = EXCLUDED.set_number,
+                        started_at = EXCLUDED.started_at
+                """.trimIndent()
+                val stmt = conn.prepareStatement(sql)
+
+                for (i in 0 until jsonArray.length()) {
+                    val w = jsonArray.getJSONObject(i)
+                    val workoutId = w.optString("id").ifEmpty { java.util.UUID.randomUUID().toString() }
+                    val exerciseName = w.optString("title", "Workout")
+                    val workoutTitle = w.optString("workout_title").ifEmpty { exerciseName }
+                    val muscle = w.optString("muscle", "Full Body")
+                    val equipment = w.optString("equipment", "Bodyweight")
+                    val startedAt = w.optString("started_at", "")
+
+                    val sets = w.optJSONArray("sets")
+                    if (sets != null && sets.length() > 0) {
+                        for (j in 0 until sets.length()) {
+                            val s = sets.getJSONObject(j)
+                            val setNum = s.optInt("set_number", j + 1)
+                            val weight = s.optDouble("weight_kg", 0.0)
+                            val reps = s.optInt("reps", 0)
+                            val logId = "${workoutId}_set_${setNum}"
+
+                            stmt.setString(1, logId)
+                            stmt.setString(2, userId)
+                            stmt.setString(3, exerciseName)
+                            stmt.setString(4, workoutTitle)
+                            stmt.setString(5, muscle)
+                            stmt.setString(6, equipment)
+                            stmt.setDouble(7, weight)
+                            stmt.setInt(8, reps)
+                            stmt.setInt(9, setNum)
+                            stmt.setString(10, startedAt)
+                            stmt.addBatch()
+                            count++
+                        }
+                    } else {
+                        val logId = workoutId
+                        stmt.setString(1, logId)
+                        stmt.setString(2, userId)
+                        stmt.setString(3, exerciseName)
+                        stmt.setString(4, workoutTitle)
+                        stmt.setString(5, muscle)
+                        stmt.setString(6, equipment)
+                        stmt.setDouble(7, w.optDouble("total_volume_kg", 0.0))
+                        stmt.setInt(8, w.optInt("total_reps", 0))
+                        stmt.setInt(9, 1)
+                        stmt.setString(10, startedAt)
+                        stmt.addBatch()
+                        count++
+                    }
+                }
+                stmt.executeBatch()
+            }
+            Result.success(count)
+        } catch (e: Exception) {
+            e.printStackTrace()
+            Result.failure(e)
+        }
+    }
+
+    suspend fun importWorkoutsFromCloud(): Result<Int> = withContext(Dispatchers.IO) {
+        try {
+            val userId = SessionManager.getUserId()
+            if (userId.isEmpty()) return@withContext Result.failure(Exception("User not logged in"))
+
+            try { initializeDatabase() } catch (e: Exception) { e.printStackTrace() }
+
+            val workoutsMap = mutableMapOf<String, org.json.JSONObject>()
+
+            getConnection().use { conn ->
+                val stmt = conn.prepareStatement("""
+                    SELECT log_id, exercise_name, workout_title, muscle, equipment, weight_kg, reps, set_number, started_at
+                    FROM user_exercise_logs
+                    WHERE user_id = ?
+                    ORDER BY started_at ASC, log_id ASC
+                """.trimIndent())
+                stmt.setString(1, userId)
+                val rs = stmt.executeQuery()
+
+                while (rs.next()) {
+                    val exerciseName = rs.getString("exercise_name") ?: "Workout"
+                    val workoutTitle = rs.getString("workout_title") ?: exerciseName
+                    val muscle = rs.getString("muscle") ?: "Full Body"
+                    val equipment = rs.getString("equipment") ?: "Bodyweight"
+                    val weightKg = rs.getDouble("weight_kg")
+                    val reps = rs.getInt("reps")
+                    val setNum = rs.getInt("set_number")
+                    val startedAt = rs.getString("started_at") ?: ""
+
+                    val groupKey = "${startedAt}_${workoutTitle}_${exerciseName}"
+
+                    val workoutObj = workoutsMap.getOrPut(groupKey) {
+                        org.json.JSONObject().apply {
+                            put("id", java.util.UUID.randomUUID().toString())
+                            put("title", exerciseName)
+                            put("workout_title", workoutTitle)
+                            put("started_at", startedAt)
+                            put("completed_at", startedAt)
+                            put("muscle", muscle)
+                            put("equipment", equipment)
+                            put("sets", org.json.JSONArray())
+                            put("total_volume_kg", 0.0)
+                            put("total_sets", 0)
+                            put("total_reps", 0)
+                        }
+                    }
+
+                    val setsArr = workoutObj.getJSONArray("sets")
+                    val setObj = org.json.JSONObject().apply {
+                        put("set_number", setNum)
+                        put("weight_kg", weightKg)
+                        put("reps", reps)
+                        put("exercise_name", exerciseName)
+                    }
+                    setsArr.put(setObj)
+
+                    workoutObj.put("total_volume_kg", workoutObj.optDouble("total_volume_kg", 0.0) + (weightKg * reps))
+                    workoutObj.put("total_sets", setsArr.length())
+                    workoutObj.put("total_reps", workoutObj.optInt("total_reps", 0) + reps)
+                }
+            }
+
+            if (workoutsMap.isNotEmpty()) {
+                val file = java.io.File(SessionManager.appContext.filesDir, "workouts.json")
+                val jsonArray = org.json.JSONArray()
+                workoutsMap.values.forEach { jsonArray.put(it) }
+                file.writeText(jsonArray.toString())
+            }
+
+            Result.success(workoutsMap.size)
+        } catch (e: Exception) {
+            e.printStackTrace()
+            Result.failure(e)
         }
     }
 
@@ -129,16 +307,19 @@ class CommunityRepository {
                         }
                         
                         // PR calculation
-                        val title = w.optString("title").lowercase()
-                        if (title.contains("bench press") || title.contains("squat") || title.contains("deadlift")) {
-                            val sets = w.optJSONArray("sets") ?: org.json.JSONArray()
-                            for (j in 0 until sets.length()) {
-                                val s = sets.getJSONObject(j)
-                                val weight = s.optDouble("weight_kg", 0.0)
-                                if (title.contains("bench press") && weight > benchPr) benchPr = weight
-                                else if (title.contains("deadlift") && weight > deadliftPr) deadliftPr = weight
-                                else if (title.contains("squat") && weight > squatPr) squatPr = weight
-                            }
+                        val sets = w.optJSONArray("sets") ?: org.json.JSONArray()
+                        for (j in 0 until sets.length()) {
+                            val s = sets.getJSONObject(j)
+                            val exName = (s.optString("exercise_name").ifEmpty { s.optString("name") }).lowercase()
+                            val weight = s.optDouble("weight_kg", 0.0)
+
+                            val isSquat = exName.contains("squat") && !exName.contains("bulgarian") && !exName.contains("split") && !exName.contains("hack") && !exName.contains("goblet") && !exName.contains("sissy")
+                            val isBench = exName.contains("bench press") && !exName.contains("machine") && !exName.contains("smith") && !exName.contains("dumbbell") && !exName.contains("db")
+                            val isDeadlift = exName.contains("deadlift") && !exName.contains("romanian") && !exName.contains("stiff") && !exName.contains("rdl")
+
+                            if (isBench && weight > benchPr) benchPr = weight
+                            else if (isDeadlift && weight > deadliftPr) deadliftPr = weight
+                            else if (isSquat && weight > squatPr) squatPr = weight
                         }
                     } catch (e: Exception) {}
                 }

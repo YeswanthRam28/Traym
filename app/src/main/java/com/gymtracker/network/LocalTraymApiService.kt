@@ -397,7 +397,7 @@ class LocalTraymApiService : TraymApiService {
     private fun isBigThree(exerciseName: String): Boolean {
         val lower = exerciseName.lowercase()
         val isSquat = lower.contains("squat") && !lower.contains("bulgarian") && !lower.contains("split") && !lower.contains("hack") && !lower.contains("goblet") && !lower.contains("sissy")
-        val isBench = lower.contains("bench press") && !lower.contains("close") && !lower.contains("incline") && !lower.contains("decline") && !lower.contains("dumbbell")
+        val isBench = lower.contains("bench press") && !lower.contains("machine") && !lower.contains("smith") && !lower.contains("dumbbell") && !lower.contains("db")
         val isDeadlift = lower.contains("deadlift") && !lower.contains("romanian") && !lower.contains("stiff") && !lower.contains("rdl")
         return isSquat || isBench || isDeadlift
     }
@@ -533,6 +533,11 @@ class LocalTraymApiService : TraymApiService {
             // Sync to Notion database if enabled
             NotionSyncManager.pushWorkoutToNotion(summary)
 
+            // Auto-sync to Neon DB Cloud
+            try {
+                com.gymtracker.network.CommunityRepository().syncWorkoutsToCloud()
+            } catch (e: Exception) { e.printStackTrace() }
+
             Response.success(summary)
         }
     }
@@ -648,6 +653,11 @@ class LocalTraymApiService : TraymApiService {
         
             NotionSyncManager.pushWorkoutToNotion(summary)
             
+            // Auto-sync to Neon DB Cloud
+            try {
+                com.gymtracker.network.CommunityRepository().syncWorkoutsToCloud()
+            } catch (e: Exception) { e.printStackTrace() }
+            
             Response.success(summary)
         }
     }
@@ -695,61 +705,53 @@ class LocalTraymApiService : TraymApiService {
     }
 
     override suspend fun getPRs(): Response<List<PrResponse>> {
-        val workouts = readJsonArray("workouts.json")
         val maxWeights = mutableMapOf<String, Double>()
-        val recentPrEvents = mutableListOf<Pair<String, Double>>()
-
-        // Extract to list for chronological sorting
-        val workoutList = mutableListOf<JSONObject>()
-        for (i in 0 until workouts.length()) {
-            workoutList.add(workouts.getJSONObject(i))
+        
+        // 1. Read prs.json baseline
+        val prsFileJson = readJson("prs.json")
+        for (key in prsFileJson.keys()) {
+            val w = prsFileJson.optDouble(key, 0.0)
+            if (w > 0) maxWeights[key] = w
         }
-        // Sort chronologically (oldest to newest) to detect PR break events properly
-        workoutList.sortBy { it.optString("started_at") }
 
-        for (w in workoutList) {
-            val title = w.optString("title")
+        // 2. Calculate dynamically from workouts history
+        val workouts = readJsonArray("workouts.json")
+        for (i in 0 until workouts.length()) {
+            val w = workouts.getJSONObject(i)
+            val wTitle = w.optString("title")
             val sets = w.optJSONArray("sets") ?: continue
-            var brokePr = false
-            var newMax = maxWeights[title] ?: 0.0
-
             for (j in 0 until sets.length()) {
                 val s = sets.getJSONObject(j)
-                val weight = s.optDouble("weight_kg", 0.0)
-                if (weight > newMax) {
-                    newMax = weight
-                    brokePr = true
+                val exName = s.optString("exercise_name").ifEmpty { s.optString("name").ifEmpty { wTitle } }
+                if (exName.isNotEmpty()) {
+                    val weight = s.optDouble("weight_kg", 0.0)
+                    val current = maxWeights[exName] ?: 0.0
+                    if (weight > current) {
+                        maxWeights[exName] = weight
+                    }
                 }
-            }
-
-            if (brokePr) {
-                maxWeights[title] = newMax
-                recentPrEvents.removeIf { it.first == title }
-                recentPrEvents.add(title to newMax)
             }
         }
 
         val list = mutableListOf<PrResponse>()
-        val addedExercises = mutableSetOf<String>()
+        val added = mutableSetOf<String>()
 
-        // 1. Add Big 3 PRs
+        // 1. Add Big 3 PRs first
         for ((ex, weight) in maxWeights) {
             if (isBigThree(ex)) {
                 list.add(PrResponse(exercise = ex, weight_kg = weight.toFloat(), is_big_three = true))
-                addedExercises.add(ex)
+                added.add(ex)
             }
         }
 
-        // 2. Add all other PRs
-        recentPrEvents.reverse() // Most recent first
-        for ((ex, weight) in recentPrEvents) {
-            if (!addedExercises.contains(ex)) {
-                list.add(PrResponse(exercise = ex, weight_kg = weight.toFloat()))
-                addedExercises.add(ex)
+        // 2. Add all other exercise PRs
+        for ((ex, weight) in maxWeights) {
+            if (!added.contains(ex)) {
+                list.add(PrResponse(exercise = ex, weight_kg = weight.toFloat(), is_big_three = false))
+                added.add(ex)
             }
         }
 
-        // Sort by weight descending
         list.sortByDescending { it.weight_kg }
 
         return Response.success(list)

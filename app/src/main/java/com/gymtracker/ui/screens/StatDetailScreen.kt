@@ -77,6 +77,7 @@ fun StatDetailScreen(
     viewModel: ProgressViewModel
 ) {
     val uiState by viewModel.uiState.collectAsState()
+    val allPrs by viewModel.allPrs.collectAsState()
     val stats = uiState
 
     val title = when(type) {
@@ -143,9 +144,19 @@ fun StatDetailScreen(
                     }
                 }
                 "leaderboard" -> {
-                    item {
-                        Box(modifier = Modifier.fillMaxWidth().padding(32.dp), contentAlignment = Alignment.Center) {
-                            Text("No PRs logged yet.", style = Typography.bodyMedium.copy(color = OffWhite.copy(alpha=0.5f)))
+                    if (allPrs.isEmpty()) {
+                        item {
+                            Box(modifier = Modifier.fillMaxWidth().padding(32.dp), contentAlignment = Alignment.Center) {
+                                Text("No PRs logged yet.", style = Typography.bodyMedium.copy(color = OffWhite.copy(alpha=0.5f)))
+                            }
+                        }
+                    } else {
+                        itemsIndexed(allPrs) { index, pr ->
+                            StatRowItem(
+                                rank = index + 1,
+                                name = pr.exercise,
+                                value = "${pr.weight_kg.toInt()} KG"
+                            )
                         }
                     }
                 }

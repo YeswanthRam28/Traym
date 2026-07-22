@@ -534,6 +534,88 @@ fun ProfileScreen(
                             }
                         }
                     }
+
+                    // Cloud DB Sync (Export) Option
+                    var isSyncingCloud by remember { mutableStateOf(false) }
+                    Surface(
+                        color = AppBlack,
+                        border = androidx.compose.foundation.BorderStroke(1.dp, Muted),
+                        shape = RoundedCornerShape(8.dp),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable {
+                                if (!isSyncingCloud) {
+                                    isSyncingCloud = true
+                                    coroutineScope.launch {
+                                        val result = com.gymtracker.network.CommunityRepository().syncWorkoutsToCloud()
+                                        isSyncingCloud = false
+                                        result.onSuccess { count ->
+                                            Toast.makeText(context, "Exported $count exercise logs to Cloud DB!", Toast.LENGTH_LONG).show()
+                                        }.onFailure { err ->
+                                            Toast.makeText(context, "Cloud sync failed: ${err.message}", Toast.LENGTH_LONG).show()
+                                        }
+                                    }
+                                }
+                            }
+                    ) {
+                        Row(
+                            modifier = Modifier.padding(16.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            Column {
+                                Text("Export Logs to Cloud DB", style = Typography.bodyLarge.copy(color = OffWhite))
+                                Text(
+                                    text = if (isSyncingCloud) "Exporting logs..." else "Push all local workout logs to Cloud DB",
+                                    style = Typography.bodySmall.copy(color = if (isSyncingCloud) Acid else OffWhite.copy(alpha = 0.5f))
+                                )
+                            }
+                            if (isSyncingCloud) {
+                                CircularProgressIndicator(color = Acid, modifier = Modifier.size(20.dp), strokeWidth = 2.dp)
+                            }
+                        }
+                    }
+
+                    // Cloud DB Import Option
+                    var isImportingCloud by remember { mutableStateOf(false) }
+                    Surface(
+                        color = AppBlack,
+                        border = androidx.compose.foundation.BorderStroke(1.dp, Muted),
+                        shape = RoundedCornerShape(8.dp),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable {
+                                if (!isImportingCloud) {
+                                    isImportingCloud = true
+                                    coroutineScope.launch {
+                                        val result = com.gymtracker.network.CommunityRepository().importWorkoutsFromCloud()
+                                        isImportingCloud = false
+                                        result.onSuccess { count ->
+                                            Toast.makeText(context, "Imported $count workouts from Cloud DB!", Toast.LENGTH_LONG).show()
+                                        }.onFailure { err ->
+                                            Toast.makeText(context, "Cloud import failed: ${err.message}", Toast.LENGTH_LONG).show()
+                                        }
+                                    }
+                                }
+                            }
+                    ) {
+                        Row(
+                            modifier = Modifier.padding(16.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            Column {
+                                Text("Import Logs from Cloud DB", style = Typography.bodyLarge.copy(color = OffWhite))
+                                Text(
+                                    text = if (isImportingCloud) "Importing logs..." else "Download & restore logs from Cloud DB",
+                                    style = Typography.bodySmall.copy(color = if (isImportingCloud) Acid else OffWhite.copy(alpha = 0.5f))
+                                )
+                            }
+                            if (isImportingCloud) {
+                                CircularProgressIndicator(color = Acid, modifier = Modifier.size(20.dp), strokeWidth = 2.dp)
+                            }
+                        }
+                    }
                 }
             },
             confirmButton = {
